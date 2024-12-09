@@ -1,7 +1,7 @@
 {
-	"name": "obsidian-sample-plugin",
+	"name": "@shermant/obsidian-plugin-local-anything",
 	"version": "1.0.0",
-	"description": "This is a sample plugin for Obsidian (https://obsidian.md)",
+	"description": "Download attachments with different extensions from links",
 	"main": "main.js",
 	"scripts": {
 		"dev": "node esbuild.config.mjs",

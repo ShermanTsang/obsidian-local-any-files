@@ -14,14 +14,14 @@ export default class LocalAttachmentsPlugin extends Plugin {
 
         // Add commands
         this.addCommand({
-            id: 'download-attachments-locally',
-            name: 'Download attachments locally',
+            id: 'local-anything',
+            name: 'Download attachments from links',
             callback: () => this.handleDownloadWithOptions()
         });
 
         this.addCommand({
-            id: 'download-attachments-locally-use-previous',
-            name: 'Download attachments locally (use previous options)',
+            id: 'local-anything-use-previous-options',
+            name: 'Download attachments from links (use previous options)',
             callback: () => this.handleDownload()
         });
 

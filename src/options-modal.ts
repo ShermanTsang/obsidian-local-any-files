@@ -20,7 +20,7 @@ export class OptionsModal extends Modal {
 		contentEl.empty();
 
 		// Title
-		contentEl.createEl('h2', {text: 'Download Attachments Options'});
+		contentEl.createEl('h2', {text: 'Local Anything > Options'});
 
 		// Add scope selection
 		this.settingsBuilder.addScopeDropdown();

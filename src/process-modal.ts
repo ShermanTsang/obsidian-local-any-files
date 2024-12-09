@@ -39,7 +39,7 @@ export class ProcessModal extends Modal {
 
         // Header section
         const headerSection = modalContainer.createDiv({cls: 'modal-header'});
-        headerSection.createEl('h2', {text: 'Processing Attachments', cls: 'modal-title'});
+        headerSection.createEl('h2', {text: 'Local Anything > Processing', cls: 'modal-title'});
 
         // Stats section
         this.statsContainer = modalContainer.createDiv({cls: 'stats-container'});
