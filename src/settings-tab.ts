@@ -1,6 +1,7 @@
 import {App, PluginSettingTab} from 'obsidian';
 import LocalAttachmentsPlugin from './main';
 import {SettingsBuilder} from "./settings-builder";
+import {UIHelper} from "./utils/ui-helper";
 
 export class LocalAttachmentsSettingTab extends PluginSettingTab {
     plugin: LocalAttachmentsPlugin;
@@ -19,34 +20,22 @@ export class LocalAttachmentsSettingTab extends PluginSettingTab {
         // Create settings builder
         const builder = new SettingsBuilder(containerEl, this.plugin);
 
+        // Add shared styles
+        UIHelper.addCategoryStyles();
+
         // Processing Options
-        containerEl.createEl('h3', {text: 'Processing Options', cls: 'setting-category'});
+        UIHelper.createCategoryHeader(containerEl, 'Processing Options');
         builder.addScopeDropdown();
         builder.addTasksDropdown();
 
         // File Extension Options
-        containerEl.createEl('h3', {text: 'File Extensions', cls: 'setting-category'});
+        UIHelper.createCategoryHeader(containerEl, 'File Extensions');
         builder.addPresetExtensions();
         builder.addCustomExtensions();
         builder.addFinalExtensionsDisplay();
 
         // Storage Options
-        containerEl.createEl('h3', {text: 'Storage Options', cls: 'setting-category'});
+        UIHelper.createCategoryHeader(containerEl, 'Storage Options');
         builder.addStorePath();
-
-        // Add category styling
-        const style = document.createElement('style');
-        style.textContent = `
-            .setting-category {
-                margin-top: 24px;
-                margin-bottom: 12px;
-                padding-bottom: 6px;
-                border-bottom: 1px solid var(--background-modifier-border);
-                color: var(--text-normal);
-                font-size: 1.2em;
-                font-weight: 600;
-            }
-        `;
-        document.head.appendChild(style);
     }
 }
