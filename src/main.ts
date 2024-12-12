@@ -1,9 +1,10 @@
-import {Plugin, TFile, Notice} from 'obsidian';
+import {Plugin, TFile, Notice, Menu, Editor, MarkdownView} from 'obsidian';
 import {LocalAttachmentsSettingTab} from "./settings-tab";
 import {DEFAULT_SETTINGS, EXTENSION_PRESETS} from "./config";
 import {FileDownloader, LinkExtractor, LinkReplacer} from "./utils/link-extractor";
 import {ProcessModal} from "./process-modal";
 import {OptionsModal} from './options-modal';
+import {SingleItemModal} from './single-item-modal';
 import {SettingsValidator} from './utils/settings-validator';
 
 export default class LocalAttachmentsPlugin extends Plugin {
@@ -24,6 +25,59 @@ export default class LocalAttachmentsPlugin extends Plugin {
             name: 'Download attachments from links (use previous options)',
             callback: () => this.handleDownload()
         });
+
+        // Register context menu events
+
+        this.registerEvent(
+            this.app.workspace.on('editor-menu', (menu, editor, view) => {
+                if (view instanceof MarkdownView) {
+                    const pos = editor.getCursor();
+                    const line = editor.getLine(pos.line);
+                    const linkMatch = line.match(/\[([^\]]*)\]\(([^)]+)\)/);
+                    const imageMatch = line.match(/!\[([^\]]*)\]\(([^)]+)\)/);
+                    
+                    if (linkMatch || imageMatch) {
+                        const match = linkMatch || imageMatch;
+                        if (match) {
+                            const url = match[2];
+                            // Extract extension from URL, handling query parameters and paths
+                            let ext = '';
+                            try {
+                                const urlObj = new URL(url);
+                                const pathname = urlObj.pathname;
+                                const filename = pathname.split('/').pop() || '';
+                                ext = '.' + (filename.split('.').pop() || '').toLowerCase();
+                            } catch {
+                                // If not a valid URL, try basic extension extraction
+                                ext = '.' + (url.split('.').pop() || '').toLowerCase().split(/[?#]/)[0];
+                            }
+                            
+                            // Check if it's an image URL or matches preset extensions
+                            const isImage = EXTENSION_PRESETS.image.includes(ext);
+                            const finalExtensions = this.getFinalExtensions();
+                            const isPresetExtension = finalExtensions && finalExtensions.includes(ext);
+
+                            console.debug('URL:', url, 'Extension:', ext, 'Is Image:', isImage, 'Is Preset:', isPresetExtension);
+                            
+                            if (isImage || isPresetExtension) {
+                                menu.addItem((item) => {
+                                    item
+                                        .setTitle('Download to local')
+                                        .setIcon('download')
+                                        .onClick(async () => {
+                                            if (this.settings) {
+                                                new SingleItemModal(this.app, this, url, async () => {
+                                                    await this.handleSingleDownload(url);
+                                                }).open();
+                                            }
+                                        });
+                                });
+                            }
+                        }
+                    }
+                }
+            })
+        );
 
         // Add settings tab
         this.addSettingTab(new LocalAttachmentsSettingTab(this.app, this));
@@ -175,4 +229,61 @@ export default class LocalAttachmentsPlugin extends Plugin {
         return [...new Set([...presetExts, ...this.settings.customExtensions])];
     }
 
+    private async handleSingleDownload(path: string) {
+        const modal = new ProcessModal(this.app, this, async () => {
+            const downloader = new FileDownloader(
+                this.settings.storePath,
+                {
+                    path: path,
+                    title: path.split('/').pop()?.split('.')[0] || 'untitled',
+                    datetime: new Date().toISOString().replace(/:/g, '-').slice(0, 19)
+                }
+            );
+
+            // Initialize stats for single file
+            modal.updateStats({
+                totalFiles: 1,
+                processedFiles: 0,
+                totalLinks: 1,
+                downloadedFiles: 0,
+                failedFiles: 0
+            });
+
+            try {
+                modal.addLog(`Downloading ${path}...`, 'info');
+                const result = await downloader.downloadFile(path, path.split('/').pop() || 'untitled');
+                
+                if (result.success) {
+                    modal.addLog(`Successfully downloaded attachment to ${result.localPath}`, 'success');
+                    modal.updateStats({
+                        totalFiles: 1,
+                        processedFiles: 1,
+                        totalLinks: 1,
+                        downloadedFiles: 1,
+                        failedFiles: 0
+                    });
+                } else {
+                    modal.addLog(`Failed to download attachment: ${result.error}`, 'error');
+                    modal.updateStats({
+                        totalFiles: 1,
+                        processedFiles: 1,
+                        totalLinks: 1,
+                        downloadedFiles: 0,
+                        failedFiles: 1
+                    });
+                }
+            } catch (error) {
+                modal.addLog(`Error downloading attachment: ${error.message}`, 'error');
+                modal.updateStats({
+                    totalFiles: 1,
+                    processedFiles: 1,
+                    totalLinks: 1,
+                    downloadedFiles: 0,
+                    failedFiles: 1
+                });
+            }
+        });
+
+        modal.open();
+    }
 }
