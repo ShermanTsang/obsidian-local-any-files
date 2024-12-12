@@ -8,12 +8,12 @@ export class UIHelper {
         style.id = 'local-attachments-styles';
         style.textContent = `
             .setting-category {
-                margin-top: 18px;
-                margin-bottom: 18px;
-                padding-bottom: 6px;
+                padding-bottom: 2px;
+                padding-top: 12px;
+                border-top: 1px solid var(--background-modifier-border);
                 color: var(--text-normal);
                 font-size: 1.2em;
-                font-weight: 700;
+                font-weight: 600;
             }
             .modal {
                 max-width: 600px;

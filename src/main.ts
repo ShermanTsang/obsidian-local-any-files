@@ -174,4 +174,5 @@ export default class LocalAttachmentsPlugin extends Plugin {
             .flatMap(preset => EXTENSION_PRESETS[preset]);
         return [...new Set([...presetExts, ...this.settings.customExtensions])];
     }
+
 }
