@@ -1,6 +1,7 @@
 
 
 ## Register context menu events
+
 ### Prompt
 ```text
 
@@ -27,4 +28,19 @@ But the `OptionsModal` for download single item should be different:
 - ProcessingOption>Scope: the value must be `singleItem`
 - FileExtensions: should be hidden
 - Target Link: add this settings-category an
+```
+
+## Refine storePath and storeFileName
+
+```text
+Split option `storePath` into `storePath` and `storeFileName`.
+1. storePath: 
+- used to determine the stored directory.
+- default value is `${path}`
+- variables: $datetime $path $title.
+
+2. storeFileName:
+- used to determine new file' name. 
+- default value is the original name `${originalName}`.
+- variables: $originName $md5 $title .
 ```

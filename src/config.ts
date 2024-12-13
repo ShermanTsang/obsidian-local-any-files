@@ -33,11 +33,20 @@ export const EXTENSION_PRESETS = {
 	academic: ['.bib', '.tex', '.sty', '.cls', '.csl', '.nb', '.mat', '.r', '.rmd', '.ipynb']
 };
 
+export interface LocalAttachmentsSettings {
+    tasks: string[];
+    scope: string;
+    presetExtensions: string[];
+    customExtensions: string[];
+    storePath: string;
+    storeFileName: string;
+}
+
 export const DEFAULT_SETTINGS: LocalAttachmentsSettings = {
-	tasks: ['extract', 'download', 'replace'],
-	scope: 'currentFile',
-	presetExtensions: ['image', 'officeFile'],
-	customExtensions: [],
-	storePath: 'assets/$path',
-	storeFileName: '$filename'
+    tasks: ['extract', 'download', 'replace'],
+    scope: 'currentFile',
+    presetExtensions: ['image', 'officeFile'],
+    customExtensions: [],
+    storePath: 'assets/${path}',
+    storeFileName: '${originalName}'
 };

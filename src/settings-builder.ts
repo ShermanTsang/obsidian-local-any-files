@@ -259,11 +259,22 @@ export class SettingsBuilder {
 	addStorePath(): void {
 		new Setting(this.containerEl)
 			.setName('Store Path')
-			.setDesc('Set the path pattern for downloaded files. Available variables: ${md5}, ${datetime}, ${path}, ${title}')
+			.setDesc('Set the path pattern for downloaded files. Available variables: ${datetime}, ${path}, ${title}')
 			.addText(text => {
 				text.setValue(this.plugin.settings.storePath)
 					.onChange(async (value) => {
 						this.plugin.settings.storePath = value;
+						await this.plugin.saveSettings();
+					});
+			});
+
+		new Setting(this.containerEl)
+			.setName('Store File Name')
+			.setDesc('Set the file name pattern for downloaded files. Available variables: ${originalName}, ${md5}, ${title}')
+			.addText(text => {
+				text.setValue(this.plugin.settings.storeFileName)
+					.onChange(async (value) => {
+						this.plugin.settings.storeFileName = value;
 						await this.plugin.saveSettings();
 					});
 			});
