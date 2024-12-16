@@ -99,7 +99,26 @@ export class ProcessModal extends Modal {
             .stat-value {
                 font-size: 1.2em;
                 font-weight: bold;
+            }
+
+            .stat-value-processed {
                 color: var(--text-accent);
+            }
+
+            .stat-value-total {
+                color: var(--text-normal);
+            }
+
+            .stat-value-found {
+                color: var(--text-success);
+            }
+
+            .stat-value-downloads {
+                color: var(--interactive-accent);
+            }
+
+            .stat-value-failed {
+                color: var(--text-error);
             }
 
             .stat-label {
@@ -235,17 +254,17 @@ export class ProcessModal extends Modal {
         if (this.statsContainer) {
             this.statsContainer.empty();
             
-            const createStatItem = (value: number, label: string) => {
+            const createStatItem = (value: number, label: string, type: string) => {
                 const item = this.statsContainer.createDiv({cls: 'stat-item'});
-                item.createDiv({cls: 'stat-value', text: value.toString()});
+                item.createDiv({cls: `stat-value stat-value-${type}`, text: value.toString()});
                 item.createDiv({cls: 'stat-label', text: label});
             };
 
-            createStatItem(this.stats.processedFiles, 'Files Processed');
-            createStatItem(this.stats.totalFiles, 'Total Files');
-            createStatItem(this.stats.totalLinks, 'Links Found');
-            createStatItem(this.stats.downloadedFiles, 'Downloads');
-            createStatItem(this.stats.failedFiles, 'Failed');
+            createStatItem(this.stats.processedFiles, 'Files Processed', 'processed');
+            createStatItem(this.stats.totalFiles, 'Total Files', 'total');
+            createStatItem(this.stats.totalLinks, 'Links Found', 'found');
+            createStatItem(this.stats.downloadedFiles, 'Downloads', 'downloads');
+            createStatItem(this.stats.failedFiles, 'Failed', 'failed');
         }
     }
 

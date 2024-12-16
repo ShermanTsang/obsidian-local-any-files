@@ -23,30 +23,16 @@ export class LinkExtractor {
 
 	extractFromText(text: string): ExtractedLink[] {
 		const links: ExtractedLink[] = [];
-		const markdownLinkRegex = /\[([^\]]*)\]\(([^)]+)\)/g;
+		const markdownLinkRegex = /!\[([^\]]*)\]\(([^)]+)\)|(?<!!)\[([^\]]*)\]\(([^)]+)\)/g;
 		const directLinkRegex = /(https?:\/\/[^\s<>)"]+)/g;
+		const processedUrls = new Set<string>();
 
-		// Extract markdown style links
+		// Extract direct links first
 		let match;
-		while ((match = markdownLinkRegex.exec(text)) !== null) {
-			const [fullMatch, title, url] = match;
-			if (this.hasValidExtension(url)) {
-				links.push({
-					originalLink: fullMatch,
-					fileExtension: this.getExtension(url),
-					fileName: title || this.getFileName(url),
-					position: {
-						start: match.index,
-						end: match.index + fullMatch.length
-					}
-				});
-			}
-		}
-
-		// Extract direct links
 		while ((match = directLinkRegex.exec(text)) !== null) {
 			const [url] = match;
-			if (this.hasValidExtension(url)) {
+			if (this.hasValidExtension(url) && !processedUrls.has(url)) {
+				processedUrls.add(url);
 				links.push({
 					originalLink: url,
 					fileExtension: this.getExtension(url),
@@ -54,6 +40,25 @@ export class LinkExtractor {
 					position: {
 						start: match.index,
 						end: match.index + url.length
+					}
+				});
+			}
+		}
+
+		// Extract markdown style links, but only if the URL hasn't been processed
+		while ((match = markdownLinkRegex.exec(text)) !== null) {
+			const [fullMatch, imgTitle, imgUrl, linkTitle, linkUrl] = match;
+			const url = imgUrl || linkUrl;
+			
+			if (this.hasValidExtension(url) && !processedUrls.has(url)) {
+				processedUrls.add(url);
+				links.push({
+					originalLink: url,  // Use the plain URL instead of the full markdown syntax
+					fileExtension: this.getExtension(url),
+					fileName: imgTitle || linkTitle || this.getFileName(url),
+					position: {
+						start: match.index,
+						end: match.index + fullMatch.length
 					}
 				});
 			}
@@ -74,15 +79,13 @@ export class LinkExtractor {
 
 	private getFileName(url: string): string {
 		try {
-			// Handle both absolute and relative URLs
-			const urlObj = url.startsWith('http') ? new URL(url) : new URL(url, 'http://dummy.base');
-			const pathSegments = urlObj.pathname.split('/');
-			const fileName = decodeURIComponent(pathSegments[pathSegments.length - 1]);
-			return fileName || 'untitled';
+			const urlObj = new URL(url);
+			const lastSegment = urlObj.pathname.split('/').pop() || '';
+			return lastSegment || 'untitled';
 		} catch (error) {
 			// Fallback for malformed URLs: extract the last segment
-			const segments = url.split(/[/?#]/);
-			return segments.filter(s => s.length > 0).pop() || 'untitled';
+			const segments = url.split('/');
+			return segments[segments.length - 1] || 'untitled';
 		}
 	}
 }

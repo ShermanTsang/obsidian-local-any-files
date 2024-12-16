@@ -186,10 +186,10 @@ export default class LocalAttachmentsPlugin extends Plugin {
 
                             if (result.success) {
                                 replacements.set(link.originalLink, result.localPath);
-                                modal.addLog(`Downloaded ${link.fileName}`, 'success', 'download');
+                                modal.addLog(`Downloaded from ${link.originalLink} to ${result.localPath}`, 'success', 'download');
                                 downloadedFiles++;
                             } else {
-                                modal.addLog(`Failed to download ${link.fileName}: ${result.error}`, 'error', 'download');
+                                modal.addLog(`Failed to download from ${link.originalLink}: ${result.error}`, 'error', 'download');
                                 failedFiles++;
                             }
 
@@ -230,44 +230,56 @@ export default class LocalAttachmentsPlugin extends Plugin {
     }
 
     private async handleSingleDownload(path: string) {
+        if (!await this.validateAndProcess(() => Promise.resolve())) {
+            return;
+        }
+
         const modal = new ProcessModal(this.app, this, async () => {
             const downloader = new FileDownloader(
                 this.settings.storePath,
                 {
                     path: path,
-                    title: path.split('/').pop()?.split('.')[0] || 'untitled',
-                    datetime: new Date().toISOString().replace(/:/g, '-').slice(0, 19)
+                    title: path.split('/').pop() || 'untitled',
+                    datetime: new Date().toISOString()
                 }
             );
 
-            // Initialize stats for single file
-            modal.updateStats({
-                totalFiles: 1,
-                processedFiles: 0,
-                totalLinks: 1,
-                downloadedFiles: 0,
-                failedFiles: 0
-            });
-
             try {
-                modal.addLog(`Downloading ${path}...`, 'info');
-                const result = await downloader.downloadFile(path, path.split('/').pop() || 'untitled');
-                
-                if (result.success) {
-                    modal.addLog(`Successfully downloaded attachment to ${result.localPath}`, 'success');
+                // Extract links to verify if it's a valid target
+                const extractor = new LinkExtractor(this.getFinalExtensions());
+                const links = extractor.extractFromText(path);
+                const totalLinks = links.length;
+
+                if (totalLinks === 0) {
+                    modal.addLog(`No valid links found with target extensions in: ${path}`, 'error');
                     modal.updateStats({
                         totalFiles: 1,
                         processedFiles: 1,
-                        totalLinks: 1,
+                        totalLinks: 0,
+                        downloadedFiles: 0,
+                        failedFiles: 0
+                    });
+                    return;
+                }
+
+                modal.addLog(`Processing URL: ${path}`, 'info');
+                const result = await downloader.downloadFile(path, path.split('/').pop() || 'untitled');
+                
+                if (result.success) {
+                    modal.addLog(`Successfully downloaded from ${path} to ${result.localPath}`, 'success');
+                    modal.updateStats({
+                        totalFiles: 1,
+                        processedFiles: 1,
+                        totalLinks,
                         downloadedFiles: 1,
                         failedFiles: 0
                     });
                 } else {
-                    modal.addLog(`Failed to download attachment: ${result.error}`, 'error');
+                    modal.addLog(`Failed to download from ${path}: ${result.error}`, 'error');
                     modal.updateStats({
                         totalFiles: 1,
                         processedFiles: 1,
-                        totalLinks: 1,
+                        totalLinks,
                         downloadedFiles: 0,
                         failedFiles: 1
                     });
@@ -277,7 +289,7 @@ export default class LocalAttachmentsPlugin extends Plugin {
                 modal.updateStats({
                     totalFiles: 1,
                     processedFiles: 1,
-                    totalLinks: 1,
+                    totalLinks: 0,
                     downloadedFiles: 0,
                     failedFiles: 1
                 });
