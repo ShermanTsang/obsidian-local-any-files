@@ -116,36 +116,36 @@ export default class LocalAttachmentsPlugin extends Plugin {
         const modal = new ProcessModal(this.app, this, async () => {
             try {
                 // Get files to process based on scope
-                let files: TFile[] = [];
-                const activeFile = this.app.workspace.getActiveFile();
+                let documents: TFile[] = [];
+                const activeDocument = this.app.workspace.getActiveFile();
                 
                 switch (this.settings.scope) {
                     case 'currentFile':
-                        files = activeFile ? [activeFile] : [];
+                        documents = activeDocument ? [activeDocument] : [];
                         break;
                     case 'allFiles':
-                        files = this.app.vault.getMarkdownFiles();
+                        documents = this.app.vault.getMarkdownFiles();
                         break;
                     case 'currentFolder':
-                        if (activeFile) {
-                            const currentFolder = activeFile.parent?.path || '';
-                            files = this.app.vault.getMarkdownFiles()
-                                .filter(file => file.parent?.path === currentFolder);
+                        if (activeDocument) {
+                            const currentFolder = activeDocument.parent?.path || '';
+                            documents = this.app.vault.getMarkdownFiles()
+                                .filter(document => document.parent?.path === currentFolder);
                         }
                         break;
                 }
 
-                let processedFiles = 0;
-                const totalFiles = files.length;
+                let processedDocuments = 0;
+                const totalDocuments = documents.length;
 
-                if (totalFiles === 0) {
-                    modal.addLog('No files found in the selected scope.', 'error');
+                if (totalDocuments === 0) {
+                    modal.addLog('No documents found in the selected scope.', 'error');
                     return;
                 }
 
                 // Initialize stats
                 modal.updateStats({
-                    totalFiles,
+                    totalFiles: totalDocuments,
                     processedFiles: 0,
                     totalLinks: 0,
                     downloadedFiles: 0,
@@ -156,29 +156,35 @@ export default class LocalAttachmentsPlugin extends Plugin {
                 let downloadedFiles = 0;
                 let failedFiles = 0;
 
-                for (const file of files) {
-                    modal.addLog(`Processing ${file.path}...`, 'info');
-                    const content = await this.app.vault.read(file);
+                for (const document of documents) {
+                    modal.startDocumentLog(document.path);
+                    const content = await this.app.vault.read(document);
 
                     // Extract links
                     const extractor = new LinkExtractor(this.getFinalExtensions());
                     const links = extractor.extractFromText(content);
                     totalLinks += links.length;
-                    modal.addLog(`Found ${links.length} links in ${file.path}`, 'success', 'extract');
+                    modal.addLog(`Found ${links.length} links in ${document.path}`, 'success', 'extract');
 
                     // Download files
                     if (this.settings.tasks.includes('download')) {
                         const downloader = new FileDownloader(
                             this.settings.storePath,
                             {
-                                path: file.path,
-                                title: file.basename,
+                                path: document.path,
+                                title: document.basename,
                                 datetime: new Date().toISOString()
                             }
                         );
 
+                        let fileSuccessCount = 0;
+                        let fileFailedCount = 0;
+
                         const replacements = new Map<string, string>();
                         for (const link of links) {
+                            modal.addDivider();
+                            modal.addLog(`File: ${link.originalLink}`, 'info', 'download');
+                            
                             const result = await downloader.downloadFile(
                                 link.originalLink,
                                 link.fileName
@@ -186,12 +192,18 @@ export default class LocalAttachmentsPlugin extends Plugin {
 
                             if (result.success) {
                                 replacements.set(link.originalLink, result.localPath);
-                                modal.addLog(`Downloaded from ${link.originalLink} to ${result.localPath}`, 'success', 'download');
+                                modal.addLog(`Status: ✓ Success`, 'success', 'download');
+                                modal.addSavedPath(result.localPath);
                                 downloadedFiles++;
+                                fileSuccessCount++;
                             } else {
-                                modal.addLog(`Failed to download from ${link.originalLink}: ${result.error}`, 'error', 'download');
+                                modal.addLog(`Status: ✗ Failed`, 'error', 'download');
+                                modal.addLog(`Error: ${result.error}`, 'error', 'download');
                                 failedFiles++;
+                                fileFailedCount++;
                             }
+
+                            modal.updateDocumentProgress(document.path, links.length, fileSuccessCount, fileFailedCount);
 
                             // Update stats after each download
                             modal.updateStats({
@@ -202,17 +214,18 @@ export default class LocalAttachmentsPlugin extends Plugin {
                         }
 
                         // Replace links
-                        if (this.settings.tasks.includes('replace')) {
+                        if (this.settings.tasks.includes('replace') && replacements.size > 0) {
+                            modal.addDivider();
                             const replacer = new LinkReplacer();
                             const newContent = replacer.replaceInText(content, replacements);
-                            await this.app.vault.modify(file, newContent);
-                            modal.addLog(`Updated links in ${file.path}`, 'success', 'replace');
+                            await this.app.vault.modify(document, newContent);
+                            modal.addLog(`Updated links in ${document.path}`, 'success', 'replace');
                         }
                     }
 
-                    processedFiles++;
-                    modal.updateProgress((processedFiles / totalFiles) * 100);
-                    modal.updateStats({ processedFiles });
+                    processedDocuments++;
+                    modal.updateProgress((processedDocuments / totalDocuments) * 100);
+                    modal.updateStats({ processedFiles: processedDocuments });
                 }
 
                 modal.addLog('Processing complete!', 'success');
@@ -223,23 +236,18 @@ export default class LocalAttachmentsPlugin extends Plugin {
         modal.open();
     }
 
-    private getFinalExtensions(): string[] {
-        const presetExts = this.settings.presetExtensions
-            .flatMap(preset => EXTENSION_PRESETS[preset]);
-        return [...new Set([...presetExts, ...this.settings.customExtensions])];
-    }
-
-    private async handleSingleDownload(path: string) {
+    private async handleSingleDownload(documentPath: string) {
         if (!await this.validateAndProcess(() => Promise.resolve())) {
             return;
         }
 
         const modal = new ProcessModal(this.app, this, async () => {
+            modal.startDocumentLog(documentPath);
             const downloader = new FileDownloader(
                 this.settings.storePath,
                 {
-                    path: path,
-                    title: path.split('/').pop() || 'untitled',
+                    path: documentPath,
+                    title: documentPath.split('/').pop() || 'untitled',
                     datetime: new Date().toISOString()
                 }
             );
@@ -247,11 +255,13 @@ export default class LocalAttachmentsPlugin extends Plugin {
             try {
                 // Extract links to verify if it's a valid target
                 const extractor = new LinkExtractor(this.getFinalExtensions());
-                const links = extractor.extractFromText(path);
+                const links = extractor.extractFromText(documentPath);
                 const totalLinks = links.length;
 
                 if (totalLinks === 0) {
-                    modal.addLog(`No valid links found with target extensions in: ${path}`, 'error');
+                    modal.addLog(`Status: ✗ Failed`, 'error');
+                    modal.addLog(`Error: No valid links found with target extensions`, 'error');
+                    modal.updateDocumentProgress(documentPath, 0, 0, 0);
                     modal.updateStats({
                         totalFiles: 1,
                         processedFiles: 1,
@@ -262,11 +272,12 @@ export default class LocalAttachmentsPlugin extends Plugin {
                     return;
                 }
 
-                modal.addLog(`Processing URL: ${path}`, 'info');
-                const result = await downloader.downloadFile(path, path.split('/').pop() || 'untitled');
+                const result = await downloader.downloadFile(documentPath, documentPath.split('/').pop() || 'untitled');
                 
                 if (result.success) {
-                    modal.addLog(`Successfully downloaded from ${path} to ${result.localPath}`, 'success');
+                    modal.addLog(`Status: ✓ Success`, 'success');
+                    modal.addSavedPath(result.localPath);
+                    modal.updateDocumentProgress(documentPath, totalLinks, 1, 0);
                     modal.updateStats({
                         totalFiles: 1,
                         processedFiles: 1,
@@ -275,7 +286,9 @@ export default class LocalAttachmentsPlugin extends Plugin {
                         failedFiles: 0
                     });
                 } else {
-                    modal.addLog(`Failed to download from ${path}: ${result.error}`, 'error');
+                    modal.addLog(`Status: ✗ Failed`, 'error');
+                    modal.addLog(`Error: ${result.error}`, 'error');
+                    modal.updateDocumentProgress(documentPath, totalLinks, 0, 1);
                     modal.updateStats({
                         totalFiles: 1,
                         processedFiles: 1,
@@ -297,5 +310,11 @@ export default class LocalAttachmentsPlugin extends Plugin {
         });
 
         modal.open();
+    }
+
+    private getFinalExtensions(): string[] {
+        const presetExts = this.settings.presetExtensions
+            .flatMap(preset => EXTENSION_PRESETS[preset]);
+        return [...new Set([...presetExts, ...this.settings.customExtensions])];
     }
 }

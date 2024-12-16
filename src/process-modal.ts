@@ -6,6 +6,8 @@ export class ProcessModal extends Modal {
     private progressFill: HTMLDivElement;
     private logsContainer: HTMLDivElement;
     private statsContainer: HTMLDivElement;
+    private currentLogContainer: HTMLDivElement | null = null;
+    private documentStats: Map<string, { links: number, success: number, failed: number }> = new Map();
     private progress = 0;
     private logs: string[] = [];
     private processCallback: () => Promise<void>;
@@ -45,13 +47,13 @@ export class ProcessModal extends Modal {
         this.statsContainer = modalContainer.createDiv({cls: 'stats-container'});
         this.updateStats();
 
-        // Logs section
-        this.logsContainer = modalContainer.createDiv({cls: 'logs-container'});
-
         // Progress section
         const progressSection = modalContainer.createDiv({cls: 'progress-section'});
         this.progressBar = progressSection.createDiv({cls: 'progress-bar'});
         this.progressFill = this.progressBar.createDiv({cls: 'progress-fill'});
+
+        // Logs section
+        this.logsContainer = modalContainer.createDiv({cls: 'logs-container'});
 
         // Initialize progress
         this.updateProgress(0);
@@ -156,19 +158,16 @@ export class ProcessModal extends Modal {
             }
 
             .logs-container {
-                max-height: 200px;
+                max-height: 300px;
                 overflow-y: auto;
                 font-family: monospace;
                 font-size: 0.9em;
-                padding: 10px;
+                padding: 0 10px;
                 background: var(--background-primary);
-                border-radius: 3px;
             }
 
             .logs-container > div {
                 margin-bottom: 5px;
-                padding: 2px 5px;
-                border-radius: 3px;
             }
 
             .logs-container > div:hover {
@@ -185,12 +184,24 @@ export class ProcessModal extends Modal {
 
             .log-info {
                 color: var(--text-muted);
+                word-break: break-all;
             }
 
             .log-divider {
-                height: 1px;
-                background-color: var(--background-modifier-border);
+                border-bottom: 1px solid var(--background-modifier-border);
                 margin: 10px 0;
+                opacity: 0.5;
+            }
+
+            .log-divider.thick {
+                border-bottom: 2px solid var(--background-modifier-border);
+                opacity: 0.85;
+            }
+
+            .log-saved-path {
+                color: var(--text-accent);
+                padding-left: 10px;
+                font-family: monospace;
             }
 
             .log-task-header {
@@ -231,6 +242,57 @@ export class ProcessModal extends Modal {
             .log-warning {
                 color: var(--text-warning);
             }
+
+            .log-document-container {
+                margin-bottom: 10px;
+                border: 1px solid var(--background-modifier-border);
+                border-radius: 5px;
+                overflow: hidden;
+            }
+
+            .log-document-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                padding: 8px 12px;
+                background: var(--background-secondary);
+                cursor: pointer;
+                user-select: none;
+            }
+
+            .log-document-header:hover {
+                background: var(--background-modifier-hover);
+            }
+
+            .log-document-title {
+                font-weight: bold;
+                color: var(--text-normal);
+            }
+
+            .log-document-stats {
+                color: var(--text-muted);
+                font-size: 0.9em;
+            }
+
+            .log-document-content {
+                font-size: 0.8em;
+                padding: 10px;
+                background: var(--background-primary);
+            }
+
+            .log-document-content.collapsed {
+                display: none;
+            }
+
+            .log-document-header:before {
+                content: "▼";
+                margin-right: 8px;
+                transition: transform 0.15s ease;
+            }
+
+            .log-document-header.collapsed:before {
+                transform: rotate(-90deg);
+            }
         `;
         document.head.appendChild(style);
     }
@@ -268,23 +330,86 @@ export class ProcessModal extends Modal {
         }
     }
 
+    startDocumentLog(docTitle: string) {
+        // Create a new document container
+        const container = this.logsContainer.createDiv({ cls: 'log-document-container' });
+        
+        // Create header with title and stats
+        const header = container.createDiv({ cls: 'log-document-header' });
+        header.createDiv({ cls: 'log-document-title', text: docTitle });
+        header.createDiv({ cls: 'log-document-stats' });
+        
+        // Initialize stats for this document
+        this.documentStats.set(docTitle, { links: 0, success: 0, failed: 0 });
+        this.updateDocumentStats(docTitle);
+
+        // Create content container
+        const content = container.createDiv({ cls: 'log-document-content' });
+        
+        // Add click handler for collapsing
+        header.addEventListener('click', () => {
+            header.toggleClass('collapsed', !header.hasClass('collapsed'));
+            content.toggleClass('collapsed', header.hasClass('collapsed'));
+        });
+
+        this.currentLogContainer = content;
+        return content;
+    }
+
+    updateDocumentStats(docTitle: string, statsElement?: HTMLElement) {
+        const stats = this.documentStats.get(docTitle);
+        if (!stats) return;
+
+        const statsText = `Links: ${stats.links} / Success: ${stats.success} / Failed: ${stats.failed}`;
+        if (statsElement) {
+            statsElement.setText(statsText);
+        }
+    }
+
     addLog(message: string, type: 'success' | 'error' | 'info' = 'info', task?: Task) {
-        // If task is specified, only show the log if that task is enabled
         if (task && !this.isTaskEnabled(task)) {
             return;
         }
 
-        // Add to logs array
         this.logs.push(message);
 
-        // Create log element
-        this.logsContainer.createDiv({
-            cls: `log log-${type}`,
-            text: message
-        });
+        if (this.currentLogContainer) {
+            this.currentLogContainer.createDiv({
+                cls: `log log-${type}`,
+                text: message
+            });
+        } else {
+            this.logsContainer.createDiv({
+                cls: `log log-${type}`,
+                text: message
+            });
+        }
 
-        // Scroll to bottom of logs
         this.logsContainer.scrollTop = this.logsContainer.scrollHeight;
+    }
+
+    updateDocumentProgress(docTitle: string, links: number, success: number, failed: number) {
+        const stats = this.documentStats.get(docTitle);
+        if (stats) {
+            stats.links = links;
+            stats.success = success;
+            stats.failed = failed;
+            this.updateDocumentStats(docTitle);
+        }
+    }
+
+    addDivider(thick = false) {
+        const container = this.currentLogContainer || this.logsContainer;
+        container.createDiv({
+            cls: `log-divider${thick ? ' thick' : ''}`
+        });
+    }
+
+    addSavedPath(path: string) {
+        this.logsContainer.createDiv({
+            cls: 'log-saved-path',
+            text: `Saved path: ${path}`
+        });
     }
 
     onClose() {
