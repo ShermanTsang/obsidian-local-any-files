@@ -1,11 +1,11 @@
-import {Plugin, TFile, Notice, Menu, Editor, MarkdownView} from 'obsidian';
-import {LocalAttachmentsSettingTab} from "./settings-tab";
-import {DEFAULT_SETTINGS, EXTENSION_PRESETS} from "./config";
-import {FileDownloader, LinkExtractor, LinkReplacer} from "./utils/link-extractor";
-import {ProcessModal} from "./process-modal";
-import {OptionsModal} from './options-modal';
-import {SingleItemModal} from './single-item-modal';
-import {SettingsValidator} from './utils/settings-validator';
+import { MarkdownView, Notice, Plugin, TFile } from 'obsidian';
+import { DEFAULT_SETTINGS, EXTENSION_PRESETS } from "./config";
+import { OptionsModal } from './options-modal';
+import { ProcessModal } from "./process-modal";
+import { LocalAttachmentsSettingTab } from "./settings-tab";
+import { SingleItemModal } from './single-item-modal';
+import { FileDownloader, LinkExtractor, LinkReplacer } from "./utils/link-extractor";
+import { SettingsBuilder } from './settings-builder';
 
 export default class LocalAttachmentsPlugin extends Plugin {
     settings: LocalAttachmentsSettings;
@@ -91,14 +91,6 @@ export default class LocalAttachmentsPlugin extends Plugin {
         await this.saveData(this.settings);
     }
 
-    private async validateAndProcess(processCallback: () => Promise<void>): Promise<boolean> {
-        const validationResult = SettingsValidator.validateSettings(this.settings);
-        if (!validationResult.isValid) {
-            new Notice('Invalid settings detected:\n' + validationResult.errors.join('\n'), 5000);
-            return false;
-        }
-        return true;
-    }
 
     private async handleDownloadWithOptions() {
         new OptionsModal(
@@ -109,7 +101,9 @@ export default class LocalAttachmentsPlugin extends Plugin {
     }
 
     private async handleDownload() {
-        if (!await this.validateAndProcess(() => Promise.resolve())) {
+        const validationResult = SettingsBuilder.validateSettings(this.settings);
+        if (!validationResult.isValid) {
+            new Notice('Please fix the following issues:\n' + validationResult.errors.join('\n'), 5000);
             return;
         }
 
@@ -238,7 +232,9 @@ export default class LocalAttachmentsPlugin extends Plugin {
     }
 
     private async handleSingleDownload(documentPath: string) {
-        if (!await this.validateAndProcess(() => Promise.resolve())) {
+        const validationResult = SettingsBuilder.validateSettings(this.settings);
+        if (!validationResult.isValid) {
+            new Notice('Please fix the following issues:\n' + validationResult.errors.join('\n'), 5000);
             return;
         }
 

@@ -530,6 +530,25 @@ export class SettingsBuilder {
 		document.head.appendChild(style);
 	}
 
+	static validateSettings(settings: any): { isValid: boolean; errors: string[] } {
+		const errors: string[] = [];
+
+		// Validate storage path
+		if (!settings.storePath) {
+			errors.push('Storage path is required');
+		}
+
+		// Validate that at least one extension source is selected
+		if (settings.presetExtensions.length === 0 && settings.customExtensions.length === 0) {
+			errors.push('At least one file extension must be selected or added');
+		}
+
+		return {
+			isValid: errors.length === 0,
+			errors
+		};
+	}
+
 	private getFinalExtensions(): string[] {
 		// Get all extensions from selected presets (already lowercase from config)
 		const presetExtensions = this.plugin.settings.presetExtensions
