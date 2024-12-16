@@ -73,19 +73,68 @@ export class LinkExtractor {
 	}
 
 	private getExtension(url: string): string {
-		const match = url.match(/\.[^.\s/?#]+$/);
-		return match ? match[0].toLowerCase() : '';
+		try {
+			// Parse the URL and get the pathname
+			const urlObj = new URL(url);
+			const pathname = urlObj.pathname;
+			
+			// Get the filename from the last segment of the path
+			const filename = pathname.split('/').pop() || '';
+			
+			// Find the last dot in the filename (not in the query parameters)
+			const lastDotIndex = filename.lastIndexOf('.');
+			if (lastDotIndex === -1) return '';
+			
+			// Get everything after the last dot
+			const extension = filename.slice(lastDotIndex).toLowerCase();
+			
+			// Validate that this is one of our accepted extensions
+			if (this.extensions.includes(extension)) {
+				return extension;
+			}
+			return '';
+		} catch (error) {
+			// Fallback for invalid URLs: use simple regex
+			const match = url.match(/\.([^.\s/?#]+)(?:[?#]|$)/);
+			return match ? `.${match[1].toLowerCase()}` : '';
+		}
 	}
 
 	private getFileName(url: string): string {
 		try {
 			const urlObj = new URL(url);
-			const lastSegment = urlObj.pathname.split('/').pop() || '';
-			return lastSegment || 'untitled';
+			const pathname = urlObj.pathname;
+			
+			// Get the filename from the last segment of the path
+			const lastSegment = pathname.split('/').pop() || '';
+			
+			// Remove any query parameters or hash if present
+			const filename = lastSegment.split(/[?#]/)[0];
+			
+			if (!filename) return 'untitled';
+			
+			// Generate a clean filename by:
+			// 1. Removing any problematic characters
+			// 2. Preserving the extension we detected
+			const extension = this.getExtension(url);
+			const nameWithoutExt = filename.substring(0, filename.length - extension.length);
+			const cleanName = nameWithoutExt
+				.replace(/[^a-zA-Z0-9-_]/g, '_') // Replace invalid characters with underscore
+				.replace(/_+/g, '_') // Replace multiple underscores with single one
+				.replace(/^_|_$/g, ''); // Remove leading/trailing underscores
+			
+			return cleanName + extension;
 		} catch (error) {
-			// Fallback for malformed URLs: extract the last segment
+			// Fallback for malformed URLs
 			const segments = url.split('/');
-			return segments[segments.length - 1] || 'untitled';
+			const lastSegment = segments[segments.length - 1] || 'untitled';
+			const extension = this.getExtension(url);
+			const nameWithoutExt = lastSegment.substring(0, lastSegment.length - extension.length);
+			
+			return nameWithoutExt
+				.replace(/[^a-zA-Z0-9-_]/g, '_')
+				.replace(/_+/g, '_')
+				.replace(/^_|_$/g, '') + extension;
 		}
 	}
 }
@@ -210,8 +259,20 @@ export class LinkReplacer {
 	replaceInText(text: string, replacements: Map<string, string>): string {
 		let newText = text;
 		for (const [originalLink, localPath] of replacements.entries()) {
-			newText = newText.replace(originalLink, `![](${localPath})`);
+			// Check if the link is already part of an image syntax
+			const imagePattern = new RegExp(`!\\[([^\\]]*)\\]\\(${this.escapeRegExp(originalLink)}\\)`, 'g');
+			if (imagePattern.test(newText)) {
+				// If it is, just replace the URL part
+				newText = newText.replace(imagePattern, `![$1](${localPath})`);
+			} else {
+				// If it's not, wrap it in image syntax
+				newText = newText.replace(originalLink, `![](${localPath})`);
+			}
 		}
 		return newText;
+	}
+
+	private escapeRegExp(string: string): string {
+		return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
 	}
 }
