@@ -2,10 +2,10 @@ import { MarkdownView, Notice, Plugin, TFile } from 'obsidian';
 import { DEFAULT_SETTINGS, EXTENSION_PRESETS } from "./config";
 import { OptionsModal } from './options-modal';
 import { ProcessModal } from "./process-modal";
+import { SettingsBuilder } from './settings-builder';
 import { LocalAttachmentsSettingTab } from "./settings-tab";
 import { SingleItemModal } from './single-item-modal';
 import { FileDownloader, LinkExtractor, LinkReplacer } from "./utils/link-extractor";
-import { SettingsBuilder } from './settings-builder';
 
 export default class LocalAttachmentsPlugin extends Plugin {
     settings: LocalAttachmentsSettings;

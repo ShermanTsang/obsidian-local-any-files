@@ -1,7 +1,7 @@
 // utils/link-extractor.ts
 // utils/file-downloader.ts
-import {requestUrl, RequestUrlResponse} from 'obsidian';
-import {createHash} from 'crypto';
+import { createHash } from 'crypto';
+import { requestUrl, RequestUrlResponse } from 'obsidian';
 
 export interface ExtractedLink {
 	originalLink: string;
@@ -259,14 +259,17 @@ export class LinkReplacer {
 	replaceInText(text: string, replacements: Map<string, string>): string {
 		let newText = text;
 		for (const [originalLink, localPath] of replacements.entries()) {
+			// Extract just the filename from the full path
+			const fileName = localPath.split('/').pop() || localPath;
+			
 			// Check if the link is already part of an image syntax
 			const imagePattern = new RegExp(`!\\[([^\\]]*)\\]\\(${this.escapeRegExp(originalLink)}\\)`, 'g');
 			if (imagePattern.test(newText)) {
 				// If it is, just replace the URL part
-				newText = newText.replace(imagePattern, `![$1](${localPath})`);
+				newText = newText.replace(imagePattern, `![$1](${fileName})`);
 			} else {
 				// If it's not, wrap it in image syntax
-				newText = newText.replace(originalLink, `![](${localPath})`);
+				newText = newText.replace(originalLink, `![](${fileName})`);
 			}
 		}
 		return newText;
