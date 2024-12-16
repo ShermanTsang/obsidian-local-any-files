@@ -1,4 +1,4 @@
-import {App, Modal} from 'obsidian';
+import { App, Modal } from 'obsidian';
 import LocalAttachmentsPlugin from './main';
 import { UIHelper } from './utils/ui-helper';
 
@@ -389,13 +389,6 @@ export class ProcessModal extends Modal {
         const container = this.currentLogContainer || this.logsContainer;
         container.createDiv({
             cls: `log-divider${thick ? ' thick' : ''}`
-        });
-    }
-
-    addSavedPath(path: string) {
-        this.logsContainer.createDiv({
-            cls: 'log-saved-path',
-            text: `Saved path: ${path}`
         });
     }
 

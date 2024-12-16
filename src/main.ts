@@ -187,7 +187,7 @@ export default class LocalAttachmentsPlugin extends Plugin {
                             if (result.success) {
                                 replacements.set(link.originalLink, result.localPath);
                                 modal.addLog(`Status: ✓ Success`, 'success', 'download');
-                                modal.addSavedPath(result.localPath);
+                                modal.addLog(`SavedPath: ${result.localPath}`, 'success', 'download');
                                 downloadedFiles++;
                                 fileSuccessCount++;
                             } else {
@@ -273,7 +273,7 @@ export default class LocalAttachmentsPlugin extends Plugin {
                 
                 if (result.success) {
                     modal.addLog(`Status: ✓ Success`, 'success');
-                    modal.addSavedPath(result.localPath);
+                    modal.addLog(`SavedPath: ✓ ${result.localPath}`, 'success');
                     modal.updateDocumentProgress(documentPath, totalLinks, 1, 0);
                     modal.updateStats({
                         totalFiles: 1,

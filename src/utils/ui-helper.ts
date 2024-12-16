@@ -29,7 +29,7 @@ export class UIHelper {
                 padding-top: 12px;
                 border-top: 1px solid var(--background-modifier-border);
                 color: var(--text-normal);
-                font-size: 1.2em;
+                font-size: 1.1em;
                 font-weight: 600;
             }
 

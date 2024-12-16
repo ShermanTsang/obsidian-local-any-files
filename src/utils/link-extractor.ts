@@ -148,6 +148,7 @@ export class FileDownloader {
 			// Handle redirects and successful responses
 			if (response.status >= 200 && response.status < 400) {
 				const localPath = this.getLocalPath(fileName);
+				console.log('localPath', localPath);
 				await this.saveFile(response, localPath);
 
 				return {

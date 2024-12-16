@@ -1,6 +1,6 @@
-import {Notice, Setting} from 'obsidian';
+import { Notice, Setting } from 'obsidian';
+import { EXTENSION_PRESETS } from "./config";
 import LocalAttachmentsPlugin from "./main";
-import {EXTENSION_PRESETS} from "./config";
 
 export class SettingsBuilder {
 	constructor(
@@ -32,13 +32,6 @@ export class SettingsBuilder {
 		// Add category styling
 		const style = document.createElement('style');
 		style.textContent = `
-            .setting-category {
-                margin-top: 24px;
-                margin-bottom: 12px;
-                color: var(--text-normal);
-                font-size: 1.2em;
-                font-weight: 600;
-            }
 
             .setting-item {
                 border: none !important;
