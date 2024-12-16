@@ -228,7 +228,8 @@ export default class LocalAttachmentsPlugin extends Plugin {
                     modal.updateStats({ processedFiles: processedDocuments });
                 }
 
-                modal.addLog('Processing complete!', 'success');
+                modal.addDivider();
+                modal.addLog('Processing current document complete!', 'success');
             } catch (error) {
                 modal.addLog(`Error: ${error.message}`, 'error');
             }

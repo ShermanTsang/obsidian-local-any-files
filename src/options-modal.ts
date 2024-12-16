@@ -14,17 +14,18 @@ export class OptionsModal extends Modal {
     ) {
         super(app);
         this.settingsBuilder = new SettingsBuilder(this.contentEl, this.plugin);
+        this.titleEl.setText('Local Anything > Options');
     }
 
     onOpen() {
         const {contentEl} = this;
         contentEl.empty();
 
+        // Override default modal styles
+        UIHelper.overrideDefaultModalStyles();
+
         // Add shared styles
         UIHelper.addCategoryStyles();
-
-        // Title
-        contentEl.createEl('h2', {text: 'Local Anything > Options'});
 
         // Processing Options
         UIHelper.createCategoryHeader(contentEl, 'Processing Options');

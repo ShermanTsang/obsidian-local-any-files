@@ -1,5 +1,6 @@
 import {App, Modal} from 'obsidian';
 import LocalAttachmentsPlugin from './main';
+import { UIHelper } from './utils/ui-helper';
 
 export class ProcessModal extends Modal {
     private progressBar: HTMLDivElement;
@@ -30,30 +31,28 @@ export class ProcessModal extends Modal {
         super(app);
         this.plugin = plugin;
         this.processCallback = processCallback;
+        this.titleEl.setText('Local Anything > Processing')
     }
 
     onOpen() {
+
         const {contentEl} = this;
         contentEl.empty();
-
-        // Container for the entire modal
-        const modalContainer = contentEl.createDiv({cls: 'local-attachments-modal'});
-
-        // Header section
-        const headerSection = modalContainer.createDiv({cls: 'modal-header'});
-        headerSection.createEl('h2', {text: 'Local Anything > Processing', cls: 'modal-title'});
+        
+        // Override default modal styles
+        UIHelper.overrideDefaultModalStyles();
 
         // Stats section
-        this.statsContainer = modalContainer.createDiv({cls: 'stats-container'});
+        this.statsContainer = contentEl.createDiv({cls: 'stats-container'});
         this.updateStats();
 
         // Progress section
-        const progressSection = modalContainer.createDiv({cls: 'progress-section'});
+        const progressSection = contentEl.createDiv({cls: 'progress-section'});
         this.progressBar = progressSection.createDiv({cls: 'progress-bar'});
         this.progressFill = this.progressBar.createDiv({cls: 'progress-fill'});
 
         // Logs section
-        this.logsContainer = modalContainer.createDiv({cls: 'logs-container'});
+        this.logsContainer = contentEl.createDiv({cls: 'logs-container'});
 
         // Initialize progress
         this.updateProgress(0);
@@ -68,21 +67,6 @@ export class ProcessModal extends Modal {
     private addStyles() {
         const style = document.createElement('style');
         style.textContent = `
-            .local-attachments-modal {
-                padding: 20px;
-                max-width: 600px;
-                margin: 0 auto;
-            }
-
-            .modal-header {
-                margin-bottom: 20px;
-                text-align: center;
-            }
-
-            .modal-title {
-                margin: 0;
-                color: var(--text-normal);
-            }
 
             .stats-container {
                 display: grid;
@@ -161,8 +145,7 @@ export class ProcessModal extends Modal {
                 max-height: 300px;
                 overflow-y: auto;
                 font-family: monospace;
-                font-size: 0.9em;
-                padding: 0 10px;
+                font-size: 0.98rem;
                 background: var(--background-primary);
             }
 
@@ -258,20 +241,34 @@ export class ProcessModal extends Modal {
                 background: var(--background-secondary);
                 cursor: pointer;
                 user-select: none;
+                position: relative;
             }
 
             .log-document-header:hover {
                 background: var(--background-modifier-hover);
             }
 
-            .log-document-title {
-                font-weight: bold;
+            .log-document-title {        
                 color: var(--text-normal);
+                flex: 1;
             }
 
             .log-document-stats {
                 color: var(--text-muted);
                 font-size: 0.9em;
+                margin-right: 24px;
+            }
+
+            .log-document-header:after {
+                content: "▽";
+                position: absolute;
+                right: 12px;
+                transition: transform 0.15s ease;
+                color: rgba(0,0,0,.8);
+            }
+
+            .log-document-header.collapsed:after {
+                transform: rotate(-90deg);
             }
 
             .log-document-content {
@@ -282,16 +279,6 @@ export class ProcessModal extends Modal {
 
             .log-document-content.collapsed {
                 display: none;
-            }
-
-            .log-document-header:before {
-                content: "▼";
-                margin-right: 8px;
-                transition: transform 0.15s ease;
-            }
-
-            .log-document-header.collapsed:before {
-                transform: rotate(-90deg);
             }
         `;
         document.head.appendChild(style);

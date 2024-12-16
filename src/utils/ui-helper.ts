@@ -1,5 +1,22 @@
-
 export class UIHelper {
+    static overrideDefaultModalStyles() {  
+        const style = document.createElement('style');     
+        style.textContent = `
+            .modal-header {
+                padding: 16px 20px;
+                border-bottom: 1px solid var(--background-modifier-border);
+            }
+
+            .modal-content {
+                padding: 10px;
+                overflow-y: auto;
+                max-height: 1000px;
+            }
+    `;
+    document.head.appendChild(style);
+    }
+
+
     static addCategoryStyles() {
         const existingStyle = document.getElementById('local-attachments-styles');
         if (existingStyle) return;
@@ -15,9 +32,7 @@ export class UIHelper {
                 font-size: 1.2em;
                 font-weight: 600;
             }
-            .modal {
-                max-width: 600px;
-            }
+
             button.mod-cta {
                 width: 100%;
                 padding: 10px;

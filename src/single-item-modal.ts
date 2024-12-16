@@ -14,17 +14,18 @@ export class SingleItemModal extends Modal {
     ) {
         super(app);
         this.settingsBuilder = new SettingsBuilder(this.contentEl, this.plugin);
+        this.titleEl.setText('Local Anything > Download Single Item');
     }
 
     onOpen() {
         const {contentEl} = this;
         contentEl.empty();
 
+        // Override default modal styles
+        UIHelper.overrideDefaultModalStyles();
+
         // Add shared styles
         UIHelper.addCategoryStyles();
-
-        // Title
-        contentEl.createEl('h2', {text: 'Local Anything > Download Single Item'});
 
         // Processing Options
         UIHelper.createCategoryHeader(contentEl, 'Processing Options');
