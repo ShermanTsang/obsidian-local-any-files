@@ -1,4 +1,4 @@
-type ScopeType = 'currentFile' | 'currentFolder' | 'allFiles' | 'singleItem';
+type ScopeType = 'singleItem' | 'currentFile' | 'currentFolder' | 'allFiles';
 type PresetExtensionType = keyof typeof import('./config').EXTENSION_PRESETS;
 type Task = 'extract' | 'download' | 'replace';
 

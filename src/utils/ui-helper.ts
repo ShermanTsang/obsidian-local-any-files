@@ -25,9 +25,7 @@ export class UIHelper {
         style.id = 'local-attachments-styles';
         style.textContent = `
             .setting-category {
-                padding-bottom: 2px;
-                padding-top: 12px;
-                border-top: 1px solid var(--background-modifier-border);
+                padding: 6px 0;
                 color: var(--text-normal);
                 font-size: 1.1em;
                 font-weight: 600;

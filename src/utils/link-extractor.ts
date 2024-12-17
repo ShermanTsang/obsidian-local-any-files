@@ -257,7 +257,7 @@ export class FileDownloader {
 		return `${path}/${generatedFileName}`;
 	}
 
-	async downloadFile(url: string, fileName: string, isMarkdownImage: boolean = false): Promise<DownloadResult> {
+	async downloadFile(url: string, fileName: string, isMarkdownImage = false): Promise<DownloadResult> {
 		try {
 			const response = await requestUrl({ url });
 

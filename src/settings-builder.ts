@@ -5,7 +5,8 @@ import LocalAttachmentsPlugin from "./main";
 export class SettingsBuilder {
 	constructor(
 		private containerEl: HTMLElement,
-		private plugin: LocalAttachmentsPlugin
+		private plugin: LocalAttachmentsPlugin,
+		private defaultScope?: 'currentFile' | 'currentFolder' | 'allFiles' | 'singleItem'
 	) {
 	}
 
@@ -57,15 +58,46 @@ export class SettingsBuilder {
 	}
 
 	addScopeDropdown(): void {
+		const options = {
+			currentFile: 'Current File Only',
+			currentFolder: 'Current Folder',
+			allFiles: 'All Files in Vault'
+		};
+
+		// For single item modal, only show the single item option
+		if (this.defaultScope === 'singleItem') {
+			new Setting(this.containerEl)
+				.setName('Scope')
+				.setDesc('Download single item')
+				.addDropdown(dropdown => {
+					dropdown
+						.addOption('singleItem', 'Single Item')
+						.setValue('singleItem')
+						.onChange(async (value) => {
+							this.plugin.settings.scope = value as 'currentFile' | 'allFiles' | 'currentFolder' | 'singleItem';
+							await this.plugin.saveSettings();
+						});
+				});
+			return;
+		}
+
+		// For regular options modal
 		new Setting(this.containerEl)
 			.setName('Scope')
 			.setDesc('Select which files to process')
 			.addDropdown(dropdown => {
+				Object.entries(options).forEach(([value, name]) => {
+					dropdown.addOption(value, name);
+				});
+				console.log('default scope', this.defaultScope);
+				console.log('settings scope', this.plugin.settings.scope);
 				dropdown
-					.addOption('currentFile', 'Current File Only')
-					.addOption('currentFolder', 'Current Folder')
-					.addOption('allFiles', 'All Files in Vault')
-					.setValue(this.plugin.settings.scope)
+					.setValue((()=> {
+						if(this.plugin.settings.scope === 'singleItem') {
+							return 'currentFile';
+						}
+						return this.defaultScope || this.plugin.settings.scope
+					})())
 					.onChange(async (value) => {
 						this.plugin.settings.scope = value as 'currentFile' | 'allFiles' | 'currentFolder';
 						await this.plugin.saveSettings();

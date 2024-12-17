@@ -1,3 +1,4 @@
+import * as crypto from 'crypto';
 import { MarkdownView, Notice, Plugin, TFile } from 'obsidian';
 import { DEFAULT_SETTINGS, EXTENSION_PRESETS } from "./config";
 import { OptionsModal } from './options-modal';
@@ -6,7 +7,6 @@ import { SettingsBuilder } from './settings-builder';
 import { LocalAttachmentsSettingTab } from "./settings-tab";
 import { SingleItemModal } from './single-item-modal';
 import { FileDownloader, LinkExtractor, LinkReplacer } from "./utils/link-extractor";
-import * as crypto from 'crypto';
 
 export default class LocalAttachmentsPlugin extends Plugin {
     settings: LocalAttachmentsSettings;
@@ -80,12 +80,29 @@ export default class LocalAttachmentsPlugin extends Plugin {
             })
         );
 
+        this.registerEvent(
+            this.app.workspace.on('file-menu', (menu, file) => {
+                menu.addItem((item) => {
+                    item
+                        .setTitle('Download files (current note)')
+                        .setIcon('download')
+                        .onClick(() => this.handleDownloadWithOptions('currentFile'));
+                });
+            })
+        );
+
         // Add settings tab
         this.addSettingTab(new LocalAttachmentsSettingTab(this.app, this));
     }
 
     async loadSettings() {
-        this.settings = Object.assign({}, DEFAULT_SETTINGS, await this.loadData());
+        const data = await this.loadData();
+        this.settings = {
+            ...DEFAULT_SETTINGS,
+            ...data,
+            // Ensure scope always has a valid value
+            scope: data?.scope || DEFAULT_SETTINGS.scope || 'currentFile'
+        };
     }
 
     async saveSettings() {
@@ -93,11 +110,12 @@ export default class LocalAttachmentsPlugin extends Plugin {
     }
 
 
-    private async handleDownloadWithOptions() {
+    private async handleDownloadWithOptions(defaultScope?: 'currentFile' | 'currentFolder' | 'allFiles') {
         new OptionsModal(
             this.app,
             this,
-            () => this.handleDownload()
+            () => this.handleDownload(),
+            defaultScope
         ).open();
     }
 
@@ -237,6 +255,10 @@ export default class LocalAttachmentsPlugin extends Plugin {
     }
 
     private async handleSingleDownload(documentPath: string) {
+        // Set scope to singleItem before opening modal
+        this.settings.scope = 'singleItem';
+        await this.saveSettings();
+        
         const validationResult = SettingsBuilder.validateSettings(this.settings);
         if (!validationResult.isValid) {
             new Notice('Please fix the following issues:\n' + validationResult.errors.join('\n'), 5000);
@@ -314,6 +336,16 @@ export default class LocalAttachmentsPlugin extends Plugin {
             }
         });
 
+        modal.open();
+    }
+
+    openOptionsModal(defaultScope?: 'currentFile' | 'currentFolder' | 'allFiles'): void {
+        const modal = new OptionsModal(
+            this.app,
+            this,
+            () => this.handleDownload(),
+            defaultScope || 'currentFile'
+        );
         modal.open();
     }
 

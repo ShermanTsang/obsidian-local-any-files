@@ -1,7 +1,7 @@
-import {App, Modal, Notice} from 'obsidian';
+import { App, Modal, Notice } from 'obsidian';
 import LocalAttachmentsPlugin from "./main";
-import {SettingsBuilder} from "./settings-builder";
-import {UIHelper} from "./utils/ui-helper";
+import { SettingsBuilder } from "./settings-builder";
+import { UIHelper } from "./utils/ui-helper";
 
 export class SingleItemModal extends Modal {
     private settingsBuilder: SettingsBuilder;
@@ -9,11 +9,11 @@ export class SingleItemModal extends Modal {
     constructor(
         app: App,
         private plugin: LocalAttachmentsPlugin,
-        private targetPath: string,
+        private documentPath: string,
         private onSubmit: () => void
     ) {
         super(app);
-        this.settingsBuilder = new SettingsBuilder(this.contentEl, this.plugin);
+        this.settingsBuilder = new SettingsBuilder(this.contentEl, this.plugin, 'singleItem');
         this.titleEl.setText('Local Anything > Download Single Item');
     }
 
@@ -29,6 +29,7 @@ export class SingleItemModal extends Modal {
 
         // Processing Options
         UIHelper.createCategoryHeader(contentEl, 'Processing Options');
+        this.settingsBuilder.addScopeDropdown();
         this.settingsBuilder.addTasksDropdown();
 
         // Target Link
@@ -39,7 +40,7 @@ export class SingleItemModal extends Modal {
 
         targetLinkContainer.createEl('div', {
             cls: 'setting-item-description target-link-text',
-            text: this.targetPath
+            text: this.documentPath
         });
 
         // Add truncation styles
@@ -71,9 +72,6 @@ export class SingleItemModal extends Modal {
     }
 
     private handleSubmit() {
-        // Force scope to singleItem
-        this.plugin.settings.scope = 'singleItem';
-        
         // Validate settings
         if (!this.plugin.settings.tasks || this.plugin.settings.tasks.length === 0) {
             new Notice('Please select at least one task.');

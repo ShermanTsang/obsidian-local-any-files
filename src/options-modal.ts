@@ -10,10 +10,11 @@ export class OptionsModal extends Modal {
     constructor(
         app: App,
         private plugin: LocalAttachmentsPlugin,
-        private onSubmit: () => void
+        private onSubmit: () => void,
+        private defaultScope?: 'currentFile' | 'currentFolder' | 'allFiles'
     ) {
         super(app);
-        this.settingsBuilder = new SettingsBuilder(this.contentEl, this.plugin);
+        this.settingsBuilder = new SettingsBuilder(this.contentEl, this.plugin, this.defaultScope);
         this.titleEl.setText('Local Anything > Options');
     }
 
