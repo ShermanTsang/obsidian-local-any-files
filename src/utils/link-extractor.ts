@@ -150,10 +150,10 @@ export class FileDownloader {
 	private variables: Record<string, string>;
 	private storeFileName: string;
 
-	constructor(storePath: string, variables: Record<string, string>, storeFileName: string = '${originalName}') {
+	constructor(storePath: string, variables: Record<string, string>, storeFileName: string) {
 		this.storePath = storePath;
 		this.variables = variables;
-		this.storeFileName = storeFileName;
+		this.storeFileName = storeFileName || '${originalName}';
 	}
 
 	async downloadFile(url: string, fileName: string): Promise<DownloadResult> {
@@ -185,13 +185,18 @@ export class FileDownloader {
 		}
 	}
 
+	private sanitizePath(path: string): string {
+		// Replace spaces and other common illegal characters with underscores
+		return path.replace(/[\s<>:"\\|?*]/g, '_');
+	}
+
 	private getLocalPath(fileName: string): string {
 		let path = this.storePath;
 		const extension = fileName.substring(fileName.lastIndexOf('.'));
 
 		// Replace variables in path
 		Object.entries(this.variables).forEach(([key, value]) => {
-			path = path.replace(`\${${key}}`, value);
+			path = path.replace(`\${${key}}`, this.sanitizePath(value));
 		});
 
 		// Generate the filename using the pattern
@@ -203,13 +208,17 @@ export class FileDownloader {
 		};
 
 		Object.entries(fileVariables).forEach(([key, value]) => {
-			generatedFileName = generatedFileName.replace(`\${${key}}`, value);
+			generatedFileName = generatedFileName.replace(`\${${key}}`, this.sanitizePath(value));
 		});
 
 		// Ensure the filename has the correct extension
 		if (!generatedFileName.endsWith(extension)) {
 			generatedFileName += extension;
 		}
+
+		// Sanitize the final path
+		path = this.sanitizePath(path);
+		generatedFileName = this.sanitizePath(generatedFileName);
 
 		return `${path}/${generatedFileName}`;
 	}
