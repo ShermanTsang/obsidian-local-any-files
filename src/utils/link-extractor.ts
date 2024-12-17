@@ -11,6 +11,7 @@ export interface ExtractedLink {
 		start: number;
 		end: number;
 	};
+	isMarkdownImage?: boolean;
 }
 
 export class LinkExtractor {
@@ -23,12 +24,31 @@ export class LinkExtractor {
 
 	extractFromText(text: string): ExtractedLink[] {
 		const links: ExtractedLink[] = [];
-		const markdownLinkRegex = /!\[([^\]]*)\]\(([^)]+)\)|(?<!!)\[([^\]]*)\]\(([^)]+)\)/g;
+		const markdownImageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
+		const markdownLinkRegex = /(?<!!)\[([^\]]*)\]\(([^)]+)\)/g;
 		const directLinkRegex = /(https?:\/\/[^\s<>)"]+)/g;
 		const processedUrls = new Set<string>();
 
-		// Extract direct links first
+		// Extract markdown image links first (these don't need extension validation)
 		let match;
+		while ((match = markdownImageRegex.exec(text)) !== null) {
+			const [fullMatch, imgTitle, imgUrl] = match;
+			if (!processedUrls.has(imgUrl)) {
+				processedUrls.add(imgUrl);
+				links.push({
+					originalLink: imgUrl,
+					fileExtension: this.getExtension(imgUrl) || '.unknown',
+					fileName: imgTitle || this.getFileName(imgUrl),
+					position: {
+						start: match.index,
+						end: match.index + fullMatch.length
+					},
+					isMarkdownImage: true
+				});
+			}
+		}
+
+		// Extract direct links
 		while ((match = directLinkRegex.exec(text)) !== null) {
 			const [url] = match;
 			if (this.hasValidExtension(url) && !processedUrls.has(url)) {
@@ -40,26 +60,26 @@ export class LinkExtractor {
 					position: {
 						start: match.index,
 						end: match.index + url.length
-					}
+					},
+					isMarkdownImage: false
 				});
 			}
 		}
 
-		// Extract markdown style links, but only if the URL hasn't been processed
+		// Extract regular markdown links (non-image), but only if the URL hasn't been processed
 		while ((match = markdownLinkRegex.exec(text)) !== null) {
-			const [fullMatch, imgTitle, imgUrl, linkTitle, linkUrl] = match;
-			const url = imgUrl || linkUrl;
-			
-			if (this.hasValidExtension(url) && !processedUrls.has(url)) {
-				processedUrls.add(url);
+			const [fullMatch, linkTitle, linkUrl] = match;
+			if (this.hasValidExtension(linkUrl) && !processedUrls.has(linkUrl)) {
+				processedUrls.add(linkUrl);
 				links.push({
-					originalLink: url,  // Use the plain URL instead of the full markdown syntax
-					fileExtension: this.getExtension(url),
-					fileName: imgTitle || linkTitle || this.getFileName(url),
+					originalLink: linkUrl,
+					fileExtension: this.getExtension(linkUrl),
+					fileName: linkTitle || this.getFileName(linkUrl),
 					position: {
 						start: match.index,
 						end: match.index + fullMatch.length
-					}
+					},
+					isMarkdownImage: false
 				});
 			}
 		}
@@ -86,17 +106,12 @@ export class LinkExtractor {
 			if (lastDotIndex === -1) return '';
 			
 			// Get everything after the last dot
-			const extension = filename.slice(lastDotIndex).toLowerCase();
-			
-			// Validate that this is one of our accepted extensions
-			if (this.extensions.includes(extension)) {
-				return extension;
-			}
-			return '';
+			return filename.slice(lastDotIndex).toLowerCase();
 		} catch (error) {
-			// Fallback for invalid URLs: use simple regex
-			const match = url.match(/\.([^.\s/?#]+)(?:[?#]|$)/);
-			return match ? `.${match[1].toLowerCase()}` : '';
+			// If URL parsing fails, try to extract extension directly from the string
+			const lastDotIndex = url.lastIndexOf('.');
+			if (lastDotIndex === -1) return '';
+			return url.slice(lastDotIndex).toLowerCase();
 		}
 	}
 
@@ -156,7 +171,93 @@ export class FileDownloader {
 		this.storeFileName = storeFileName || '${originalName}';
 	}
 
-	async downloadFile(url: string, fileName: string): Promise<DownloadResult> {
+	private getCleanFileName(url: string): string {
+		try {
+			// Parse the URL and get the pathname
+			const urlObj = new URL(url);
+			const pathname = urlObj.pathname;
+			
+			// Get the filename from the last segment of the path
+			let filename = pathname.split('/').pop() || '';
+			
+			// Remove query parameters if present in the filename
+			filename = filename.split('?')[0];
+			
+			// If no filename found, use a hash of the full URL
+			if (!filename) {
+				filename = createHash('md5').update(url).digest('hex').substring(0, 8);
+			}
+			
+			return filename;
+		} catch (error) {
+			// If URL parsing fails, use a hash of the URL
+			return createHash('md5').update(url).digest('hex').substring(0, 8);
+		}
+	}
+
+	private getExtension(fileName: string): string {
+		const lastDotIndex = fileName.lastIndexOf('.');
+		if (lastDotIndex === -1) return '';
+		return fileName.slice(lastDotIndex).toLowerCase();
+	}
+
+	private getExtensionFromContentType(contentType: string): string {
+		const mimeToExt: { [key: string]: string } = {
+			'image/jpeg': '.jpg',
+			'image/jpg': '.jpg',
+			'image/png': '.png',
+			'image/gif': '.gif',
+			'image/webp': '.webp',
+			'image/svg+xml': '.svg',
+			'image/bmp': '.bmp',
+			'image/tiff': '.tiff',
+			'application/pdf': '.pdf',
+			'video/mp4': '.mp4',
+			'video/webm': '.webm',
+			'audio/mpeg': '.mp3',
+			'audio/wav': '.wav',
+			'audio/webm': '.weba',
+		};
+
+		// Get the base MIME type without parameters
+		const baseMimeType = contentType.split(';')[0].trim().toLowerCase();
+		return mimeToExt[baseMimeType] || '.unknown';
+	}
+
+	private async getLocalPath(originalUrl: string, fileName: string, extension: string): Promise<string> {
+		let path = this.storePath;
+		const cleanFileName = this.getCleanFileName(originalUrl);
+
+		// Replace variables in path
+		Object.entries(this.variables).forEach(([key, value]) => {
+			path = path.replace(`\${${key}}`, this.sanitizePath(value));
+		});
+
+		// Generate the filename using the pattern
+		let generatedFileName = this.storeFileName;
+		const fileVariables = {
+			...this.variables,
+			originalName: cleanFileName,
+			md5: createHash('md5').update(originalUrl).digest('hex')
+		};
+
+		Object.entries(fileVariables).forEach(([key, value]) => {
+			generatedFileName = generatedFileName.replace(`\${${key}}`, this.sanitizePath(value));
+		});
+
+		// Ensure the filename has the correct extension
+		if (!generatedFileName.endsWith(extension)) {
+			generatedFileName += extension;
+		}
+
+		// Sanitize the final path
+		path = this.sanitizePath(path);
+		generatedFileName = this.sanitizePath(generatedFileName);
+
+		return `${path}/${generatedFileName}`;
+	}
+
+	async downloadFile(url: string, fileName: string, isMarkdownImage: boolean = false): Promise<DownloadResult> {
 		try {
 			const response = await requestUrl({ url });
 
@@ -168,7 +269,24 @@ export class FileDownloader {
 				};
 			}
 
-			const localPath = this.getLocalPath(fileName);
+			let extension = this.getExtension(fileName);
+			
+			// Only use content-type for markdown images without a clear extension
+			if (isMarkdownImage && (!extension || extension === '.unknown')) {
+				const contentType = response.headers['content-type'];
+				if (contentType) {
+					extension = this.getExtensionFromContentType(contentType);
+				}
+			}
+
+			const localPath = await this.getLocalPath(url, fileName, extension);
+
+			// Ensure the directory exists before saving
+			const app = (window as any).app;
+			const dirPath = localPath.substring(0, localPath.lastIndexOf('/'));
+			await app.vault.adapter.mkdir(dirPath);
+
+			// Save the file
 			await this.saveFile(response, localPath);
 
 			return {
@@ -190,57 +308,25 @@ export class FileDownloader {
 		return path.replace(/[\s<>:"\\|?*]/g, '_');
 	}
 
-	private getLocalPath(fileName: string): string {
-		let path = this.storePath;
-		const extension = fileName.substring(fileName.lastIndexOf('.'));
-
-		// Replace variables in path
-		Object.entries(this.variables).forEach(([key, value]) => {
-			path = path.replace(`\${${key}}`, this.sanitizePath(value));
-		});
-
-		// Generate the filename using the pattern
-		let generatedFileName = this.storeFileName;
-		const fileVariables = {
-			...this.variables,
-			originalName: fileName,
-			md5: createHash('md5').update(fileName).digest('hex')
-		};
-
-		Object.entries(fileVariables).forEach(([key, value]) => {
-			generatedFileName = generatedFileName.replace(`\${${key}}`, this.sanitizePath(value));
-		});
-
-		// Ensure the filename has the correct extension
-		if (!generatedFileName.endsWith(extension)) {
-			generatedFileName += extension;
-		}
-
-		// Sanitize the final path
-		path = this.sanitizePath(path);
-		generatedFileName = this.sanitizePath(generatedFileName);
-
-		return `${path}/${generatedFileName}`;
-	}
-
 	private async saveFile(response: RequestUrlResponse, path: string): Promise<void> {
 		const app = (window as any).app;
 		if (!app?.vault?.adapter) {
-			throw new Error('Unable to access Obsidian vault');
+			throw new Error('App vault adapter not found');
 		}
 
-		// Ensure the directory exists
-		const dirPath = path.substring(0, path.lastIndexOf('/'));
-		await app.vault.adapter.mkdir(dirPath);
-
-		// Save the file
+		// Convert array buffer to binary string if needed
+		let data: ArrayBuffer;
 		if (response.arrayBuffer) {
-			await app.vault.adapter.writeBinary(path, response.arrayBuffer);
+			data = response.arrayBuffer;
 		} else if (response.text) {
-			await app.vault.adapter.write(path, response.text);
+			// Convert text to ArrayBuffer if that's what we got
+			const encoder = new TextEncoder();
+			data = encoder.encode(response.text).buffer;
 		} else {
-			throw new Error('Response contains no data');
+			throw new Error('No valid data found in response');
 		}
+
+		await app.vault.adapter.writeBinary(path, data);
 	}
 }
 

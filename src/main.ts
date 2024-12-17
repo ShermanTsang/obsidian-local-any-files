@@ -185,7 +185,8 @@ export default class LocalAttachmentsPlugin extends Plugin {
                             
                             const result = await downloader.downloadFile(
                                 link.originalLink,
-                                link.fileName
+                                link.fileName,
+                                link.isMarkdownImage
                             );
 
                             if (result.success) {
