@@ -6,6 +6,7 @@ import { SettingsBuilder } from './settings-builder';
 import { LocalAttachmentsSettingTab } from "./settings-tab";
 import { SingleItemModal } from './single-item-modal';
 import { FileDownloader, LinkExtractor, LinkReplacer } from "./utils/link-extractor";
+import * as crypto from 'crypto';
 
 export default class LocalAttachmentsPlugin extends Plugin {
     settings: LocalAttachmentsSettings;
@@ -162,20 +163,23 @@ export default class LocalAttachmentsPlugin extends Plugin {
 
                     // Download files
                     if (this.settings.tasks.includes('download')) {
-                        const downloader = new FileDownloader(
-                            this.settings.storePath,
-                            {
-                                path: document.path,
-                                title: document.basename,
-                                datetime: new Date().toISOString()
-                            }
-                        );
-
                         let fileSuccessCount = 0;
                         let fileFailedCount = 0;
 
-                        const replacements = new Map<string, string>();
+                        const downloadResults = new Map<string, string>();
                         for (const link of links) {
+                            const downloader = new FileDownloader(
+                                this.settings.storePath,
+                                {
+                                    path: document.path,
+                                    title: document.basename,
+                                    datetime: new Date().toISOString(),
+                                    originalName: link.fileName,
+                                    md5: crypto.createHash('md5').update(link.fileName).digest('hex')
+                                },
+                                this.settings.storeFileName
+                            );
+
                             modal.addDivider();
                             modal.addLog(`File: ${link.originalLink}`, 'info', 'download');
                             
@@ -185,11 +189,11 @@ export default class LocalAttachmentsPlugin extends Plugin {
                             );
 
                             if (result.success) {
-                                replacements.set(link.originalLink, result.localPath);
                                 modal.addLog(`Status: ✓ Success`, 'success', 'download');
                                 modal.addLog(`SavedPath: ${result.localPath}`, 'success', 'download');
                                 downloadedFiles++;
                                 fileSuccessCount++;
+                                downloadResults.set(link.originalLink, result.localPath);
                             } else {
                                 modal.addLog(`Status: ✗ Failed`, 'error', 'download');
                                 modal.addLog(`Error: ${result.error}`, 'error', 'download');
@@ -208,10 +212,10 @@ export default class LocalAttachmentsPlugin extends Plugin {
                         }
 
                         // Replace links
-                        if (this.settings.tasks.includes('replace') && replacements.size > 0) {
+                        if (this.settings.tasks.includes('replace') && downloadResults.size > 0) {
                             modal.addDivider();
                             const replacer = new LinkReplacer();
-                            const newContent = replacer.replaceInText(content, replacements);
+                            const newContent = replacer.replaceInText(content, downloadResults);
                             await this.app.vault.modify(document, newContent);
                             modal.addLog(`Updated links in ${document.path}`, 'success', 'replace');
                         }
@@ -245,8 +249,11 @@ export default class LocalAttachmentsPlugin extends Plugin {
                 {
                     path: documentPath,
                     title: documentPath.split('/').pop() || 'untitled',
-                    datetime: new Date().toISOString()
-                }
+                    datetime: new Date().toISOString(),
+                    originalName: documentPath.split('/').pop() || 'untitled',
+                    md5: crypto.createHash('md5').update(documentPath.split('/').pop() || 'untitled').digest('hex')
+                },
+                this.settings.storeFileName
             );
 
             try {

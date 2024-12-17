@@ -148,89 +148,70 @@ export interface DownloadResult {
 export class FileDownloader {
 	private storePath: string;
 	private variables: Record<string, string>;
+	private storeFileName: string;
 
-	constructor(storePath: string, variables: Record<string, string>) {
+	constructor(storePath: string, variables: Record<string, string>, storeFileName: string = '${originalName}') {
 		this.storePath = storePath;
 		this.variables = variables;
+		this.storeFileName = storeFileName;
 	}
 
 	async downloadFile(url: string, fileName: string): Promise<DownloadResult> {
 		try {
-			// Handle relative URLs and encode special characters
-			let processedUrl = url;
-			if (!url.match(/^https?:\/\//i)) {
-				// For relative URLs, ensure they start with /
-				processedUrl = url.startsWith('/') ? url : '/' + url;
-				// Convert to absolute URL if it's relative
-				try {
-					const baseUrl = new URL(url).origin;
-					processedUrl = new URL(processedUrl, baseUrl).toString();
-				} catch (e) {
-					return {
-						success: false,
-						localPath: '',
-						error: 'Invalid URL format:' + JSON.stringify(e)
-					};
-				}
-			}
+			const response = await requestUrl({ url });
 
-			// Encode URL while preserving the original structure
-			try {
-				const urlObj = new URL(processedUrl);
-				processedUrl = urlObj.toString();
-			} catch (e) {
+			if (response.status !== 200) {
 				return {
 					success: false,
-					localPath: '',
-					error: 'Invalid URL format:' + JSON.stringify(e)
+					error: `Failed to download file: ${response.status} ${response.text}`,
+					localPath: ''
 				};
 			}
 
-			const response = await requestUrl({
-				url: processedUrl,
-				throw: false, // Don't throw on non-200 responses
-				headers: {
-					'User-Agent': 'ObsidianLocalAttachments/1.0'
-				}
-			});
+			const localPath = this.getLocalPath(fileName);
+			await this.saveFile(response, localPath);
 
-			// Handle redirects and successful responses
-			if (response.status >= 200 && response.status < 400) {
-				const localPath = this.getLocalPath(fileName);
-				console.log('localPath', localPath);
-				await this.saveFile(response, localPath);
-
-				return {
-					success: true,
-					localPath
-				};
-			} else {
-				throw new Error(`HTTP error! status: ${response.status}`);
-			}
+			return {
+				success: true,
+				error: '',
+				localPath: localPath
+			};
 		} catch (error) {
 			return {
 				success: false,
-				localPath: '',
-				error: error.message
+				error: `Error downloading file: ${error}`,
+				localPath: ''
 			};
 		}
 	}
 
 	private getLocalPath(fileName: string): string {
 		let path = this.storePath;
+		const extension = fileName.substring(fileName.lastIndexOf('.'));
 
 		// Replace variables in path
 		Object.entries(this.variables).forEach(([key, value]) => {
 			path = path.replace(`\${${key}}`, value);
 		});
 
-		// Add MD5 hash if required
-		if (path.includes('${md5}')) {
-			const hash = createHash('md5').update(fileName).digest('hex');
-			path = path.replace('${md5}', hash);
+		// Generate the filename using the pattern
+		let generatedFileName = this.storeFileName;
+		const fileVariables = {
+			...this.variables,
+			originalName: fileName,
+			md5: createHash('md5').update(fileName).digest('hex')
+		};
+
+		Object.entries(fileVariables).forEach(([key, value]) => {
+			generatedFileName = generatedFileName.replace(`\${${key}}`, value);
+		});
+
+		// Ensure the filename has the correct extension
+		if (!generatedFileName.endsWith(extension)) {
+			generatedFileName += extension;
 		}
 
-		return path + '/' + fileName;
+		return `${path}/${generatedFileName}`;
 	}
 
 	private async saveFile(response: RequestUrlResponse, path: string): Promise<void> {
@@ -254,7 +235,6 @@ export class FileDownloader {
 	}
 }
 
-// utils/link-replacer.ts
 export class LinkReplacer {
 	replaceInText(text: string, replacements: Map<string, string>): string {
 		let newText = text;
