@@ -1,11 +1,11 @@
 {
-	"id": "obsidian-local-anything",
-	"name": "Local Anything",
+	"id": "obsidian-local-any-files",
+	"name": "Local Any Files",
 	"version": "1.0.0",
 	"minAppVersion": "0.15.0",
 	"description": "Download all files from links to local attachments.",
 	"author": "ShermanTsang",
 	"authorUrl": "https://shermant.com",
-	"fundingUrl": "https://github.com/ShermanTsang/obsidian-local-anything",
+	"fundingUrl": "https://github.com/ShermanTsang/obsidian-local-any-files",
 	"isDesktopOnly": false
 }

@@ -1,94 +1,107 @@
-# Obsidian Sample Plugin
+# Obsidian Plugin: Local any files
 
-This is a sample plugin for Obsidian (https://obsidian.md).
+[![GitHub release (latest by date)](https://img.shields.io/github/v/release/ShermanTsang/obsidian-local-any-files)](https://github.com/ShermanTsang/obsidian-local-any-files/releases/latest)
+[![GitHub all releases](https://img.shields.io/github/downloads/ShermanTsang/obsidian-local-any-files/total)](https://github.com/ShermanTsang/obsidian-local-any-files/releases)
+[![GitHub stars](https://img.shields.io/github/stars/ShermanTsang/obsidian-local-any-files)](https://github.com/ShermanTsang/obsidian-local-any-files/stargazers)
+[![GitHub license](https://img.shields.io/github/license/ShermanTsang/obsidian-local-any-files)](https://github.com/ShermanTsang/obsidian-local-any-files/blob/main/LICENSE)
 
-This project uses TypeScript to provide type checking and documentation.
-The repo depends on the latest plugin API (obsidian.d.ts) in TypeScript Definition format, which contains TSDoc comments describing what it does.
+A powerful Obsidian plugin that helps you download and manage external files locally. 
 
-This sample plugin demonstrates some of the basic functionality the plugin API can do.
-- Adds a ribbon icon, which shows a Notice when clicked.
-- Adds a command "Open Sample Modal" which opens a Modal.
-- Adds a plugin setting tab to the settings page.
-- Registers a global click event and output 'click' to the console.
-- Registers a global interval which logs 'setInterval' to the console.
+It supports a wide range of file types and provides flexible configuration options for organizing your attachments.
 
-## First time developing plugins?
+## Features
 
-Quick starting guide for new plugin devs:
+- **Wide File Type Support**: Preset groups for various file types.
+  - **Images**: `.png`, `.jpg`, `.jpeg`, `.gif`, `.bmp`, `.svg`, `.webp`, `.tiff`, `.ico`, `.raw`, `.heic`, `.heif`, `.avif`, `.jfif`
+  - **Office Files**: `.doc`, `.docx`, `.xls`, `.xlsx`, `.ppt`, `.pptx`, `.pdf`, `.odt`, `.ods`, `.odp`, `.rtf`, `.txt`, `.csv`, `.epub`, `.pages`, `.numbers`, `.key`
+  - **Archives**: `.zip`, `.rar`, `.7z`, `.tar`, `.gz`, `.bz2`, `.xz`, `.iso`, `.tgz`, `.z`, `.bzip2`, `.cab`
+  - **Music**: `.mp3`, `.wav`, `.flac`, `.m4a`, `.ogg`, `.aac`, `.wma`, `.aiff`, `.alac`, `.mid`, `.midi`, `.opus`, `.amr`
+  - **Videos**: `.mp4`, `.avi`, `.mkv`, `.mov`, `.wmv`, `.flv`, `.webm`, `.m4v`, `.mpg`, `.mpeg`, `.3gp`, `.ogv`, `.ts`, `.vob`
+  - **Code Files**: `.js`, `.ts`, `.jsx`, `.tsx`, `.html`, `.css`, `.scss`, `.json`, `.xml`, `.yaml`, `.yml`, `.md`, `.py`, `.java`, `.cpp`, `.c`, `.cs`, `.php`, `.rb`, `.go`, `.rs`, `.swift`
+  - **Fonts**: `.ttf`, `.otf`, `.woff`, `.woff2`, `.eot`
+  - **Design Files**: `.psd`, `.ai`, `.eps`, `.sketch`, `.fig`, `.xd`, `.blend`, `.obj`, `.fbx`, `.stl`, `.3ds`, `.dae`
+  - **Databases**: `.sql`, `.db`, `.sqlite`, `.mdb`, `.accdb`, `.csv`, `.tsv`
+  - **Ebooks**: `.epub`, `.mobi`, `.azw`, `.azw3`, `.fb2`, `.lit`, `.djvu`
+  - **Academic**: `.bib`, `.tex`, `.sty`, `.cls`, `.csl`, `.nb`, `.mat`, `.r`, `.rmd`, `.ipynb`
 
-- Check if [someone already developed a plugin for what you want](https://obsidian.md/plugins)! There might be an existing plugin similar enough that you can partner up with.
-- Make a copy of this repo as a template with the "Use this template" button (login to GitHub if you don't see it).
-- Clone your repo to a local development folder. For convenience, you can place this folder in your `.obsidian/plugins/your-plugin-name` folder.
-- Install NodeJS, then run `npm i` in the command line under your repo folder.
-- Run `npm run dev` to compile your plugin from `main.ts` to `main.js`.
-- Make changes to `main.ts` (or create new `.ts` files). Those changes should be automatically compiled into `main.js`.
-- Reload Obsidian to load the new version of your plugin.
-- Enable plugin in settings window.
-- For updates to the Obsidian API run `npm update` in the command line under your repo folder.
+- **Smart Processing**:
+  - Extracts links from your notes
+  - Downloads files locally
+  - Automatically replaces links with local paths
 
-## Releasing new releases
+- **Intuitive Process View**:
+  - Real-time progress tracking
+  - Clear success/failure indicators
+  - Detailed logs for each operation
+  - Visual progress bar for better feedback
 
-- Update your `manifest.json` with your new version number, such as `1.0.1`, and the minimum Obsidian version required for your latest release.
-- Update your `versions.json` file with `"new-plugin-version": "minimum-obsidian-version"` so older versions of Obsidian can download an older version of your plugin that's compatible.
-- Create new GitHub release using your new version number as the "Tag version". Use the exact version number, don't include a prefix `v`. See here for an example: https://github.com/obsidianmd/obsidian-sample-plugin/releases
-- Upload the files `manifest.json`, `main.js`, `styles.css` as binary attachments. Note: The manifest.json file must be in two places, first the root path of your repository and also in the release.
-- Publish the release.
+- **Flexible Scope Options**:
+  - Process current file only
+  - Process entire current folder
+  - Process all files in vault
+  - Process single items through context menu
 
-> You can simplify the version bump process by running `npm version patch`, `npm version minor` or `npm version major` after updating `minAppVersion` manually in `manifest.json`.
-> The command will bump version in `manifest.json` and `package.json`, and add the entry for the new version to `versions.json`
+- **Customizable Settings**:
+  - Preset file extension groups
+  - Custom file extension support
+  - Configurable storage paths
+  - Customizable file naming patterns
 
-## Adding your plugin to the community plugin list
+## Comparison with `obsidian-local-images`
 
-- Check the [plugin guidelines](https://docs.obsidian.md/Plugins/Releasing/Plugin+guidelines).
-- Publish an initial version.
-- Make sure you have a `README.md` file in the root of your repo.
-- Make a pull request at https://github.com/obsidianmd/obsidian-releases to add your plugin.
+While `obsidian-local-images` is a great plugin focused on image attachments, `obsidian-local-any-files` extends similar functionality to a much wider range of file types:
 
-## How to use
+- **File Type Support**:
+  - `obsidian-local-images`: Focuses on image files only
+  - `Local any files`: Supports images, documents, archives, media, code files, and many more
 
-- Clone this repo.
-- Make sure your NodeJS is at least v16 (`node --version`).
-- `npm i` or `yarn` to install dependencies.
-- `npm run dev` to start compilation in watch mode.
+- **Processing Options**:
+  - `obsidian-local-images`: Processes images in the current note
+  - `Local any files`: Flexible scope options (current file, folder, entire vault, or single items)
 
-## Manually installing the plugin
+- **Configuration**:
+  - `obsidian-local-images`: Basic image-focused settings
+  - `Local any files`: Extensive configuration options for file types, storage paths, and naming patterns
 
-- Copy over `main.js`, `styles.css`, `manifest.json` to your vault `VaultFolder/.obsidian/plugins/your-plugin-id/`.
+- **Organization**:
+  - `obsidian-local-images`: Standard image organization
+  - `Local any files`: Customizable storage paths with variables for better organization
 
-## Improve code quality with eslint (optional)
-- [ESLint](https://eslint.org/) is a tool that analyzes your code to quickly find problems. You can run ESLint against your plugin to find common bugs and ways to improve your code. 
-- To use eslint with this project, make sure to install eslint from terminal:
-  - `npm install -g eslint`
-- To use eslint to analyze this project use this command:
-  - `eslint main.ts`
-  - eslint will then create a report with suggestions for code improvement by file and line number.
-- If your source code is in a folder, such as `src`, you can use eslint with this command to analyze all files in that folder:
-  - `eslint .\src\`
+## Usage
+ 
+### Quick Start
 
-## Funding URL
+1. Install the plugin from Obsidian Community Plugins
+2. Configure desired file types in settings:
+   - Enable preset groups (images, documents, etc.)
+   - Add custom extensions if needed
 
-You can include funding URLs where people who use your plugin can financially support it.
+### Processing Files
 
-The simple way is to set the `fundingUrl` field to your link in your `manifest.json` file:
+#### Method 1: Command Palette
+1. Open Command Palette (Ctrl/Cmd + P)
+2. Search for "Local any files" or "Download attachments from links"
+3. Choose processing options in the modal
 
-```json
-{
-    "fundingUrl": "https://buymeacoffee.com"
-}
-```
+#### Method 2: Context Menu
+1. Right-click on a link in your note
+2. Select "Download to local" option
+3. Configure options in the modal
 
-If you have multiple URLs, you can also do:
+### Configuration
 
-```json
-{
-    "fundingUrl": {
-        "Buy Me a Coffee": "https://buymeacoffee.com",
-        "GitHub Sponsor": "https://github.com/sponsors",
-        "Patreon": "https://www.patreon.com/"
-    }
-}
-```
+#### Storage Path
+- Default: `assets/${path}`
+- Variables available: 
+  - `${path}`: Current note's path
+  - `${originalName}`: Original filename
 
-## API Documentation
+#### Custom Extensions
+- Add your own extensions in settings
+- Format: `.ext` (e.g., `.pdf`, `.custom`)
+- Multiple extensions: `.pdf|.txt|.md`
 
-See https://github.com/obsidianmd/obsidian-api
+## Support
+
+- [GitHub Issues](https://github.com/ShermanTsang/obsidian-local-any-files/issues)
+- [Feature Requests](https://github.com/ShermanTsang/obsidian-local-any-files/issues/new)
