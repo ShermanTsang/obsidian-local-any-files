@@ -5,7 +5,7 @@
 [![GitHub stars](https://img.shields.io/github/stars/ShermanTsang/obsidian-local-any-files)](https://github.com/ShermanTsang/obsidian-local-any-files/stargazers)
 [![GitHub license](https://img.shields.io/github/license/ShermanTsang/obsidian-local-any-files)](https://github.com/ShermanTsang/obsidian-local-any-files/blob/main/LICENSE)
 
-A powerful Obsidian plugin that helps you download and manage external files locally. 
+A powerful Obsidian plugin that helps you `extractExternalLinks`,`downloadFileLocally` and `replaceExternalLinks`. 
 
 It supports a wide range of file types and provides flexible configuration options for organizing your attachments.
 
@@ -41,11 +41,21 @@ It supports a wide range of file types and provides flexible configuration optio
   - Process all files in vault
   - Process single items through context menu
 
-- **Customizable Settings**:
-  - Preset file extension groups
-  - Custom file extension support
-  - Configurable storage paths
-  - Customizable file naming patterns
+- **Separated Tasks**:
+  - `Extract External Links`: Find all external links in your notes
+  - `Download File Locally`: Download external files to your vault
+  - `Replace External Links`: Update links to point to local files
+  - Customize which tasks to run based on your needs
+
+- **Customizable Store Path and File Name**:
+  - Dynamic store path with variables support:
+    - `${path}`: Current note's path
+    - `${notename}`: Current note's name
+  - Flexible file naming with variables:
+    - `${originalName}`: Original file name
+    - `${date}`: Current date
+    - `${time}`: Current time
+    - `${md5}`: Random string
 
 ## Comparison with `obsidian-local-images`
 
