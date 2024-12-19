@@ -193,8 +193,9 @@ export default class LocalAttachmentsPlugin extends Plugin {
                                 this.settings.storePath,
                                 {
                                     path: document.path,
-                                    title: document.basename,
-                                    datetime: new Date().toISOString(),
+                                    notename: document.basename,
+                                    date: new Date().toISOString().split('T')[0],
+                                    time: new Date().toISOString().split('T')[1].split('.')[0].replace(/:/g, '-'),
                                     originalName: link.fileName,
                                     md5: crypto.createHash('md5').update(link.fileName).digest('hex')
                                 },
@@ -274,8 +275,9 @@ export default class LocalAttachmentsPlugin extends Plugin {
                 this.settings.storePath,
                 {
                     path: documentPath,
-                    title: documentPath.split('/').pop() || 'untitled',
-                    datetime: new Date().toISOString(),
+                    notename: documentPath.split('/').pop() || 'untitled',
+                    date: new Date().toISOString().split('T')[0],
+                    time: new Date().toISOString().split('T')[1].split('.')[0].replace(/:/g, '-'),
                     originalName: documentPath.split('/').pop() || 'untitled',
                     md5: crypto.createHash('md5').update(documentPath.split('/').pop() || 'untitled').digest('hex')
                 },
