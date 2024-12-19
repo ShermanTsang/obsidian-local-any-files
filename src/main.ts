@@ -174,7 +174,10 @@ export default class LocalAttachmentsPlugin extends Plugin {
                     const content = await this.app.vault.read(document);
 
                     // Extract links
-                    const extractor = new LinkExtractor(this.getFinalExtensions());
+                    const extractor = new LinkExtractor(
+                        this.getFinalExtensions(),
+                        this.settings.presetExtensions
+                    );
                     const links = extractor.extractFromText(content);
                     totalLinks += links.length;
                     modal.addLog(`Found ${links.length} links in ${document.path}`, 'success', 'extract');
@@ -281,7 +284,10 @@ export default class LocalAttachmentsPlugin extends Plugin {
 
             try {
                 // Extract links to verify if it's a valid target
-                const extractor = new LinkExtractor(this.getFinalExtensions());
+                const extractor = new LinkExtractor(
+                    this.getFinalExtensions(),
+                    this.settings.presetExtensions
+                );
                 const links = extractor.extractFromText(documentPath);
                 const totalLinks = links.length;
 
