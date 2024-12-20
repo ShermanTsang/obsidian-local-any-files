@@ -27,7 +27,7 @@ export class LinkExtractor {
 	extractFromText(text: string): ExtractedLink[] {
 		const links: ExtractedLink[] = [];
 		const markdownImageRegex = /!\[([^\]]*)\]\(([^)]+)\)/g;
-		const markdownLinkRegex = /(?<!!)\[([^\]]*)\]\(([^)]+)\)/g;
+		const markdownLinkRegex = /\[([^\]]*)\]\(([^)]+)\)/g;
 		const directLinkRegex = /(https?:\/\/[^\s<>)"]+)/g;
 		const processedUrls = new Set<string>();
 
@@ -35,13 +35,13 @@ export class LinkExtractor {
 		let match;
 		if (this.allowImages) {
 			while ((match = markdownImageRegex.exec(text)) !== null) {
-				const [fullMatch, imgTitle, imgUrl] = match;
+				const [fullMatch, , imgUrl] = match;
 				if (!processedUrls.has(imgUrl)) {
 					processedUrls.add(imgUrl);
 					links.push({
 						originalLink: imgUrl,
-						fileExtension: this.getExtension(imgUrl) || '.unknown',
-						fileName: imgTitle || this.getFileName(imgUrl),
+						fileExtension: this.getExtension(imgUrl),
+						fileName: this.getFileName(imgUrl),
 						position: {
 							start: match.index,
 							end: match.index + fullMatch.length
@@ -52,17 +52,18 @@ export class LinkExtractor {
 			}
 		}
 
-		// Extract regular markdown links
+		// Process markdown links (excluding those that were already processed as images)
 		while ((match = markdownLinkRegex.exec(text)) !== null) {
-			const [fullMatch, linkTitle, linkUrl] = match;
-			if (!processedUrls.has(linkUrl)) {
-				const extension = this.getExtension(linkUrl).toLowerCase();
+			const [fullMatch, title, url] = match;
+			// Skip if this is an image link (starts with !) or if we've already processed this URL
+			if (!fullMatch.startsWith('!') && !processedUrls.has(url)) {
+				processedUrls.add(url);
+				const extension = this.getExtension(url).toLowerCase();
 				if (this.extensions.includes(extension)) {
-					processedUrls.add(linkUrl);
 					links.push({
-						originalLink: linkUrl,
+						originalLink: url,
 						fileExtension: extension,
-						fileName: linkTitle || this.getFileName(linkUrl),
+						fileName: title || this.getFileName(url),
 						position: {
 							start: match.index,
 							end: match.index + fullMatch.length
@@ -109,17 +110,17 @@ export class LinkExtractor {
 			const pathname = urlObj.pathname;
 			
 			// Get the filename from the last segment of the path
-			const filename = pathname.split('/').pop() || '';
+			let filename = pathname.split('/').pop() || '';
 			
 			// Remove query parameters if present in the filename
-			const filenameWithoutQuery = filename.split('?')[0];
+			filename = filename.split('?')[0];
 			
-			// Find the last dot in the filename (not in the query parameters)
-			const lastDotIndex = filenameWithoutQuery.lastIndexOf('.');
-			if (lastDotIndex === -1) return '';
+			// If no filename found, use a hash of the full URL
+			if (!filename) {
+				filename = createHash('md5').update(url).digest('hex').substring(0, 8);
+			}
 			
-			// Get everything after the last dot
-			return filenameWithoutQuery.slice(lastDotIndex).toLowerCase();
+			return filename;
 		} catch (error) {
 			// If URL parsing fails, try to extract extension directly from the string
 			const lastDotIndex = url.lastIndexOf('.');
