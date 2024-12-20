@@ -1,6 +1,6 @@
 {
 	"name": "@shermant/obsidian-plugin-local-any-files",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"description": "Download any files from notes' links",
 	"main": "main.js",
 	"scripts": {

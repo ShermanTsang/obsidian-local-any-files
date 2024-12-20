@@ -1,7 +1,7 @@
 {
 	"id": "local-any-files",
 	"name": "Local Any Files",
-	"version": "1.1.0",
+	"version": "1.2.0",
 	"minAppVersion": "0.15.0",
 	"description": "Download all files from links to local attachments.",
 	"author": "ShermanTsang",
