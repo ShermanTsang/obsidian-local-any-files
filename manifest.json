@@ -1,7 +1,7 @@
 {
 	"id": "obsidian-local-any-files",
 	"name": "Local Any Files",
-	"version": "1.0.0",
+	"version": "1.1.0",
 	"minAppVersion": "0.15.0",
 	"description": "Download all files from links to local attachments.",
 	"author": "ShermanTsang",
