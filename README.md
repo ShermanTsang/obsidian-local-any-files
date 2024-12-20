@@ -5,9 +5,13 @@
 [![GitHub stars](https://img.shields.io/github/stars/ShermanTsang/obsidian-local-any-files)](https://github.com/ShermanTsang/obsidian-local-any-files/stargazers)
 [![GitHub license](https://img.shields.io/github/license/ShermanTsang/obsidian-local-any-files)](https://github.com/ShermanTsang/obsidian-local-any-files/blob/main/LICENSE)
 
+English | [简体中文](README.zh-CN.md)
+
 A powerful Obsidian plugin that helps you `extractExternalLinks`,`downloadFileLocally` and `replaceExternalLinks`. 
 
 It supports a wide range of file types and provides flexible configuration options for organizing your attachments.
+
+![Preview](assets/preview.gif)
 
 ## Features
 
