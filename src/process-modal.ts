@@ -113,22 +113,25 @@ export class ProcessModal extends Modal {
             }
 
             .progress-section {
-                margin-bottom: 20px;
+                margin: 20px 0;
             }
 
             .progress-bar {
-                height: 8px;
+                width: 100%;
+                height: 10px;
                 background: var(--background-modifier-border);
-                border-radius: 4px;
+                border-radius: 5px;
                 overflow: hidden;
             }
 
             .progress-fill {
                 height: 100%;
-                background: var(--interactive-accent);
+                background: var(--text-accent);
+                border-radius: 5px;
                 transition: width 0.3s ease;
+                width: var(--progress-width, 0%);
             }
-
+      
             .logs-section {
                 background: var(--background-secondary);
                 border-radius: 5px;
@@ -291,7 +294,7 @@ export class ProcessModal extends Modal {
     updateProgress(value: number) {
         this.progress = value;
         if (this.progressFill) {
-            this.progressFill.style.width = `${value}%`;
+            this.progressFill.style.setProperty('--progress-width', `${value}%`);
         }
     }
 
