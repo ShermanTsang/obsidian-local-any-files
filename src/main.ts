@@ -182,6 +182,16 @@ export default class LocalAttachmentsPlugin extends Plugin {
                     totalLinks += links.length;
                     modal.addLog(`Found ${links.length} links in ${document.path}`, 'success', 'extract');
 
+                    // If only extract task is enabled, display each found link
+                    if (this.settings.tasks.length === 1 && this.settings.tasks.includes('extract')) {
+                        for (const link of links) {
+                            modal.addLog(`Link: ${link.originalLink}`, 'info', 'extract');
+                            modal.addLog(`Extension: ${link.fileExtension}`, 'info', 'extract');
+                            modal.addDivider();
+                        }
+                        modal.updateDocumentProgress(document.path, links.length, links.length, 0);
+                    }
+
                     // Download files
                     if (this.settings.tasks.includes('download')) {
                         let fileSuccessCount = 0;
