@@ -46,8 +46,12 @@ export default class LocalAttachmentsPlugin extends Plugin {
                             try {
                                 const urlObj = new URL(url);
                                 const pathname = urlObj.pathname;
-                                const filename = pathname.split('/').pop() || '';
-                                ext = '.' + (filename.split('.').pop() || '').toLowerCase();
+                                // Remove query parameters and hash fragments
+                                const cleanPath = pathname.split(/[?#]/)[0];
+                                // Get the last segment of the path and extract extension
+                                const lastSegment = cleanPath.split('/').pop() || '';
+                                const matches = lastSegment.match(/\.([^.]+)$/);
+                                ext = matches ? '.' + matches[1].toLowerCase() : '';
                             } catch {
                                 // If not a valid URL, try basic extension extraction
                                 ext = '.' + (url.split('.').pop() || '').toLowerCase().split(/[?#]/)[0];

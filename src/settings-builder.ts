@@ -89,8 +89,6 @@ export class SettingsBuilder {
 				Object.entries(options).forEach(([value, name]) => {
 					dropdown.addOption(value, name);
 				});
-				console.log('default scope', this.defaultScope);
-				console.log('settings scope', this.plugin.settings.scope);
 				dropdown
 					.setValue((()=> {
 						if(this.plugin.settings.scope === 'singleItem') {

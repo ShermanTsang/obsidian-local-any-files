@@ -52,13 +52,17 @@ export class LinkExtractor {
 			}
 		}
 
+		console.log(this.extensions);
+		
 		// Process markdown links (excluding those that were already processed as images)
 		while ((match = markdownLinkRegex.exec(text)) !== null) {
 			const [fullMatch, title, url] = match;
+		
 			// Skip if this is an image link (starts with !) or if we've already processed this URL
 			if (!fullMatch.startsWith('!') && !processedUrls.has(url)) {
 				processedUrls.add(url);
 				const extension = this.getExtension(url).toLowerCase();
+				console.log(extension);
 				if (this.extensions.includes(extension)) {
 					links.push({
 						originalLink: url,
@@ -115,12 +119,9 @@ export class LinkExtractor {
 			// Remove query parameters if present in the filename
 			filename = filename.split('?')[0];
 			
-			// If no filename found, use a hash of the full URL
-			if (!filename) {
-				filename = createHash('md5').update(url).digest('hex').substring(0, 8);
-			}
-			
-			return filename;
+			// Extract just the extension
+			const matches = filename.match(/\.([^.]+)$/);
+			return matches ? '.' + matches[1].toLowerCase() : '';
 		} catch (error) {
 			// If URL parsing fails, try to extract extension directly from the string
 			const lastDotIndex = url.lastIndexOf('.');
