@@ -283,8 +283,50 @@ export class ProcessModal extends Modal {
             .log-document-content.collapsed {
                 display: none;
             }
+
+            .copyable-text {
+                position: relative;
+                cursor: pointer;
+                display: inline-flex;
+                align-items: center;
+                gap: 4px;
+            }
+
+            .copyable-text:hover {
+                text-decoration: underline;
+            }
+
+            .copyable-text:hover::after {
+                content: "📋";
+                font-size: 14px;
+                opacity: 0.7;
+            }
+
+            .copyable-text.copied::after {
+                content: "✓";
+                color: var(--text-success);
+            }
         `;
         document.head.appendChild(style);
+    }
+
+    private createCopyableText(text: string, container: HTMLElement, className?: string) {
+        const span = container.createSpan({
+            cls: `copyable-text ${className || ''}`,
+            text: text
+        });
+
+        span.addEventListener('click', async () => {
+            try {
+                await navigator.clipboard.writeText(text);
+                span.addClass('copied');
+                setTimeout(() => span.removeClass('copied'), 1000);
+            } catch (err) {
+                console.error('Failed to copy text:', err);
+            }
+        });
+
+        return span;
     }
 
     private isTaskEnabled(task: Task): boolean {
@@ -363,19 +405,27 @@ export class ProcessModal extends Modal {
 
         this.logs.push(message);
 
-        if (this.currentLogContainer) {
-            this.currentLogContainer.createDiv({
-                cls: `log log-${type}`,
-                text: message
-            });
+        const container = this.currentLogContainer || this.logsContainer;
+        const logDiv = container.createDiv({ cls: `log log-${type}` });
+
+        // Check if the message contains a link or file path
+        if (message.startsWith('Link: ')) {
+            const link = message.substring(6);
+            logDiv.createSpan({ text: 'Link: ' });
+            this.createCopyableText(link, logDiv, 'log-url');
+        } else if (message.startsWith('File: ')) {
+            const file = message.substring(6);
+            logDiv.createSpan({ text: 'File: ' });
+            this.createCopyableText(file, logDiv, 'log-url');
+        } else if (message.startsWith('SavedPath: ')) {
+            const path = message.substring(message.indexOf(': ') + 2);
+            logDiv.createSpan({ text: 'SavedPath: ' });
+            this.createCopyableText(path.replace('✓ ', ''), logDiv, 'log-saved-path');
         } else {
-            this.logsContainer.createDiv({
-                cls: `log log-${type}`,
-                text: message
-            });
+            logDiv.setText(message);
         }
 
-        this.logsContainer.scrollTop = this.logsContainer.scrollHeight;
+        container.scrollTop = container.scrollHeight;
     }
 
     updateDocumentProgress(docTitle: string, links: number, success: number, failed: number) {

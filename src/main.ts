@@ -186,7 +186,6 @@ export default class LocalAttachmentsPlugin extends Plugin {
                     if (this.settings.tasks.length === 1 && this.settings.tasks.includes('extract')) {
                         for (const link of links) {
                             modal.addLog(`Link: ${link.originalLink}`, 'info', 'extract');
-                            modal.addLog(`Extension: ${link.fileExtension}`, 'info', 'extract');
                             modal.addDivider();
                         }
                         modal.updateDocumentProgress(document.path, links.length, links.length, 0);
