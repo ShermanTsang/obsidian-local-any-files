@@ -31,12 +31,17 @@ export class LinkExtractor {
 		const directLinkRegex = /(https?:\/\/[^\s<>)"]+)/g;
 		const processedUrls = new Set<string>();
 
+		// Helper function to check if URL is external
+		const isExternalUrl = (url: string): boolean => {
+			return url.startsWith('http://') || url.startsWith('https://');
+		};
+
 		// Process markdown image links only if image preset is enabled
 		let match;
 		if (this.allowImages) {
 			while ((match = markdownImageRegex.exec(text)) !== null) {
 				const [fullMatch, , imgUrl] = match;
-				if (!processedUrls.has(imgUrl)) {
+				if (!processedUrls.has(imgUrl) && isExternalUrl(imgUrl)) {
 					processedUrls.add(imgUrl);
 					links.push({
 						originalLink: imgUrl,
@@ -51,18 +56,17 @@ export class LinkExtractor {
 				}
 			}
 		}
-
-		console.log(this.extensions);
 		
 		// Process markdown links (excluding those that were already processed as images)
 		while ((match = markdownLinkRegex.exec(text)) !== null) {
 			const [fullMatch, title, url] = match;
 		
 			// Skip if this is an image link (starts with !) or if we've already processed this URL
-			if (!fullMatch.startsWith('!') && !processedUrls.has(url)) {
+			// or if it's not an external URL
+			if (!fullMatch.startsWith('!') && !processedUrls.has(url) && isExternalUrl(url)) {
 				processedUrls.add(url);
 				const extension = this.getExtension(url).toLowerCase();
-				console.log(extension);
+
 				if (this.extensions.includes(extension)) {
 					links.push({
 						originalLink: url,
@@ -81,7 +85,7 @@ export class LinkExtractor {
 		// Extract direct links
 		while ((match = directLinkRegex.exec(text)) !== null) {
 			const [url] = match;
-			if (!processedUrls.has(url)) {
+			if (!processedUrls.has(url) && isExternalUrl(url)) {
 				const extension = this.getExtension(url).toLowerCase();
 				if (this.extensions.includes(extension)) {
 					processedUrls.add(url);
