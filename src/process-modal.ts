@@ -20,8 +20,8 @@ export class ProcessModal extends Modal {
         replace: 'Replace Links'
     };
     private stats = {
-        totalFiles: 0,
-        processedFiles: 0,
+        totalNotes: 0,
+        processedNotes: 0,
         totalLinks: 0,
         downloadedFiles: 0,
         failedFiles: 0
@@ -354,8 +354,8 @@ export class ProcessModal extends Modal {
                 item.createDiv({cls: 'stat-label', text: label});
             };
 
-            createStatItem(this.stats.processedFiles, 'Files Processed', 'processed');
-            createStatItem(this.stats.totalFiles, 'Total Files', 'total');
+            createStatItem(this.stats.processedNotes, 'Notes Processed', 'processed');
+            createStatItem(this.stats.totalNotes, 'Total Notes', 'total');
             createStatItem(this.stats.totalLinks, 'Links Found', 'found');
             createStatItem(this.stats.downloadedFiles, 'Downloads', 'downloads');
             createStatItem(this.stats.failedFiles, 'Failed', 'failed');

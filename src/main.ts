@@ -158,8 +158,8 @@ export default class LocalAttachmentsPlugin extends Plugin {
 
                 // Initialize stats
                 modal.updateStats({
-                    totalFiles: totalDocuments,
-                    processedFiles: 0,
+                    totalNotes: totalDocuments,
+                    processedNotes: 0,
                     totalLinks: 0,
                     downloadedFiles: 0,
                     failedFiles: 0
@@ -255,7 +255,7 @@ export default class LocalAttachmentsPlugin extends Plugin {
 
                     processedDocuments++;
                     modal.updateProgress((processedDocuments / totalDocuments) * 100);
-                    modal.updateStats({ processedFiles: processedDocuments });
+                    modal.updateStats({ processedNotes: processedDocuments });
                 }
 
                 modal.addDivider();
@@ -307,8 +307,8 @@ export default class LocalAttachmentsPlugin extends Plugin {
                     modal.addLog(`Error: No valid links found with target extensions`, 'error');
                     modal.updateDocumentProgress(documentPath, 0, 0, 0);
                     modal.updateStats({
-                        totalFiles: 1,
-                        processedFiles: 1,
+                        totalNotes: 1,
+                        processedNotes: 1,
                         totalLinks: 0,
                         downloadedFiles: 0,
                         failedFiles: 0
@@ -323,8 +323,8 @@ export default class LocalAttachmentsPlugin extends Plugin {
                     modal.addLog(`SavedPath: ✓ ${result.localPath}`, 'success');
                     modal.updateDocumentProgress(documentPath, totalLinks, 1, 0);
                     modal.updateStats({
-                        totalFiles: 1,
-                        processedFiles: 1,
+                        totalNotes: 1,
+                        processedNotes: 1,
                         totalLinks,
                         downloadedFiles: 1,
                         failedFiles: 0
@@ -334,8 +334,8 @@ export default class LocalAttachmentsPlugin extends Plugin {
                     modal.addLog(`Error: ${result.error}`, 'error');
                     modal.updateDocumentProgress(documentPath, totalLinks, 0, 1);
                     modal.updateStats({
-                        totalFiles: 1,
-                        processedFiles: 1,
+                        totalNotes: 1,
+                        processedNotes: 1,
                         totalLinks,
                         downloadedFiles: 0,
                         failedFiles: 1
@@ -344,8 +344,8 @@ export default class LocalAttachmentsPlugin extends Plugin {
             } catch (error) {
                 modal.addLog(`Error downloading attachment: ${error.message}`, 'error');
                 modal.updateStats({
-                    totalFiles: 1,
-                    processedFiles: 1,
+                    totalNotes: 1,
+                    processedNotes: 1,
                     totalLinks: 0,
                     downloadedFiles: 0,
                     failedFiles: 1
