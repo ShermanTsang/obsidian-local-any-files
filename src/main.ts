@@ -254,7 +254,15 @@ export default class LocalAttachmentsPlugin extends Plugin {
                             modal.addDivider();
                             const replacer = new LinkReplacer();
                             const newContent = replacer.replaceInText(content, downloadResults);
-                            await this.app.vault.modify(document, newContent);
+                            
+                            // Use the processor API to modify the file content
+                            await this.app.fileManager.processFrontMatter(document, (frontmatter) => {
+                                // Keep the frontmatter unchanged
+                            });
+                            await this.app.vault.process(document, (data) => {
+                                return newContent;
+                            });
+                            
                             modal.addLog(`Updated links in ${document.path}`, 'success', 'replace');
                         }
                     }
