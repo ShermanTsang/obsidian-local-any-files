@@ -14,20 +14,20 @@ export class SettingsBuilder {
 		const {containerEl} = this;
 		containerEl.empty();
 
-		containerEl.createEl('h2', {text: 'Local Attachments Settings'});
+		containerEl.createEl('h2', {text: 'Local attachments settings'});
 
-		// Processing Options
-		containerEl.createEl('h3', {text: 'Processing Options', cls: 'setting-category'});
+		// Processing options
+		containerEl.createEl('h3', {text: 'Processing options', cls: 'setting-category'});
 		this.addScopeDropdown();
 		this.addTasksDropdown();
 
-		// File Extension Options
-		containerEl.createEl('h3', {text: 'File Extensions', cls: 'setting-category'});
+		// File extension options
+		containerEl.createEl('h3', {text: 'File extensions', cls: 'setting-category'});
 		this.addPresetExtensions();
 		this.addCustomExtensions();
 
-		// Storage Options
-		containerEl.createEl('h3', {text: 'Storage Options', cls: 'setting-category'});
+		// Storage options
+		containerEl.createEl('h3', {text: 'Storage options', cls: 'setting-category'});
 		this.addStorePath();
 
 		// Add category styling
@@ -59,9 +59,9 @@ export class SettingsBuilder {
 
 	addScopeDropdown(): void {
 		const options = {
-			currentFile: 'Current File Only',
-			currentFolder: 'Current Folder',
-			allFiles: 'All Files in Vault'
+			currentFile: 'Current file only',
+			currentFolder: 'Current folder',
+			allFiles: 'All files in vault'
 		};
 
 		// For single item modal, only show the single item option
@@ -71,7 +71,7 @@ export class SettingsBuilder {
 				.setDesc('Download single item')
 				.addDropdown(dropdown => {
 					dropdown
-						.addOption('singleItem', 'Single Item')
+						.addOption('singleItem', 'Single item')
 						.setValue('singleItem')
 						.onChange(async (value) => {
 							this.plugin.settings.scope = value as 'currentFile' | 'allFiles' | 'currentFolder' | 'singleItem';
@@ -112,9 +112,9 @@ export class SettingsBuilder {
 		const tasksContainer = tasksSetting.settingEl.createDiv('tasks-container');
 
 		const tasks = {
-			extract: 'Extract Links',
-			download: 'Download Files',
-			replace: 'Replace Links'
+			extract: 'Extract links',
+			download: 'Download files',
+			replace: 'Replace links'
 		};
 
 		const taskToggles: Record<string, any> = {};
@@ -157,13 +157,13 @@ export class SettingsBuilder {
 										this.plugin.settings.tasks.includes('replace'))) {
 									// Cannot disable extract if download or replace is enabled
 									toggle.setValue(true);
-									new Notice('Cannot disable Extract Links while Download Files or Replace Links is enabled');
+									new Notice('Cannot disable Extract links while Download files or Replace links is enabled');
 									return;
 								} else if (key === 'download' &&
 									this.plugin.settings.tasks.includes('replace')) {
 									// Cannot disable download if replace is enabled
 									toggle.setValue(true);
-									new Notice('Cannot disable Download Files while Replace Links is enabled');
+									new Notice('Cannot disable Download files while Replace links is enabled');
 									return;
 								} else {
 									this.plugin.settings.tasks = this.plugin.settings.tasks
@@ -208,24 +208,24 @@ export class SettingsBuilder {
 
 	addPresetExtensions(): void {
 		const presetSetting = new Setting(this.containerEl)
-			.setName('Preset Extensions')
+			.setName('Preset extensions')
 			.setDesc('Select preset file types')
 			.setClass('presets-setting');
 
 		const presetsContainer = presetSetting.settingEl.createDiv('presets-container');
 
 		const presets = {
-			image: 'Image Files',
-			officeFile: 'Office Documents',
-			archivePackage: 'Archive Files',
-			music: 'Music Files',
-			video: 'Video Files',
-			code: 'Code & Development',
-			font: 'Font Files',
-			design: '3D & Design Files',
-			database: 'Database Files',
-			ebook: 'E-book Formats',
-			academic: 'Research & Academic'
+			image: 'Image files',
+			officeFile: 'Office documents',
+			archivePackage: 'Archive files',
+			music: 'Music files',
+			video: 'Video files',
+			code: 'Code & development',
+			font: 'Font files',
+			design: '3D & design files',
+			database: 'Database files',
+			ebook: 'E-book formats',
+			academic: 'Research & academic'
 		};
 
 		Object.entries(presets).forEach(([key, name]) => {
@@ -281,7 +281,7 @@ export class SettingsBuilder {
 
 	addStorePath(): void {
 		new Setting(this.containerEl)
-			.setName('Store Path')
+			.setName('Store path')
 			.setDesc('Set the path pattern for downloaded files. Available variables: ${date}, ${time}, ${path}, ${notename}')
 			.addText(text => {
 				text.setValue(this.plugin.settings.storePath)
@@ -292,7 +292,7 @@ export class SettingsBuilder {
 			});
 
 		new Setting(this.containerEl)
-			.setName('Store File Name')
+			.setName('Store file name')
 			.setDesc('Set the file name pattern for downloaded files. Available variables: ${originalName}, ${md5}, ${notename}, ${date}, ${time}')
 			.addText(text => {
 				text.setValue(this.plugin.settings.storeFileName)
@@ -305,7 +305,7 @@ export class SettingsBuilder {
 
 	addCustomExtensions(): void {
 		const customSetting = new Setting(this.containerEl)
-			.setName('Custom Extensions')
+			.setName('Custom extensions')
 			.setDesc('Add custom file extensions (format: .ext). Use | to add multiple extensions at once (e.g., .pdf|.txt|.md)')
 			.setClass('custom-extensions-setting');
 
@@ -475,7 +475,7 @@ export class SettingsBuilder {
 
 		// Create the preview setting
 		const previewSetting = new Setting(this.containerEl)
-			.setName('Active Extensions')
+			.setName('Active extensions')
 			.setDesc('File extensions that will be processed')
 			.setClass('extensions-preview-setting');
 

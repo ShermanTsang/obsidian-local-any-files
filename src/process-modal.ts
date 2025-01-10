@@ -15,9 +15,9 @@ export class ProcessModal extends Modal {
     private plugin: LocalAttachmentsPlugin;
     private currentTask: Task | null = null;
     private taskDisplayNames: Record<Task, string> = {
-        extract: 'Extract Links',
-        download: 'Download Files',
-        replace: 'Replace Links'
+        extract: 'Extract links',
+        download: 'Download files',
+        replace: 'Replace links'
     };
     private stats = {
         totalNotes: 0,

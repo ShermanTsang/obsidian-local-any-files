@@ -14,7 +14,7 @@ export class SingleItemModal extends Modal {
     ) {
         super(app);
         this.settingsBuilder = new SettingsBuilder(this.contentEl, this.plugin, 'singleItem');
-        this.titleEl.setText('Local Anything > Download Single Item');
+        this.titleEl.setText('Local anything > Download single item');
     }
 
     onOpen() {
