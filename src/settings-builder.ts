@@ -14,8 +14,6 @@ export class SettingsBuilder {
 		const {containerEl} = this;
 		containerEl.empty();
 
-		containerEl.createEl('h2', {text: 'Local attachments settings'});
-
 		// Processing
 		containerEl.createEl('h3', {text: 'Processing', cls: 'setting-category'});
 		this.addScopeDropdown();

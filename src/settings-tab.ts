@@ -1,7 +1,7 @@
-import {App, PluginSettingTab} from 'obsidian';
+import { App, PluginSettingTab } from 'obsidian';
 import LocalAttachmentsPlugin from './main';
-import {SettingsBuilder} from "./settings-builder";
-import {UIHelper} from "./utils/ui-helper";
+import { SettingsBuilder } from "./settings-builder";
+import { UIHelper } from "./utils/ui-helper";
 
 export class LocalAttachmentsSettingTab extends PluginSettingTab {
     plugin: LocalAttachmentsPlugin;
@@ -14,8 +14,6 @@ export class LocalAttachmentsSettingTab extends PluginSettingTab {
     display(): void {
         const {containerEl} = this;
         containerEl.empty();
-
-        containerEl.createEl('h2', {text: 'Local Attachments Settings'});
 
         // Create settings builder
         const builder = new SettingsBuilder(containerEl, this.plugin);
