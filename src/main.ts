@@ -85,12 +85,15 @@ export default class LocalAttachmentsPlugin extends Plugin {
 
         this.registerEvent(
             this.app.workspace.on('file-menu', (menu, file) => {
-                menu.addItem((item) => {
-                    item
-                        .setTitle('Download files (current note)')
-                        .setIcon('download')
-                        .onClick(() => this.handleDownloadWithOptions('currentFile'));
-                });
+                // Only show the option for markdown files
+                if (file instanceof TFile && file.extension === 'md') {
+                    menu.addItem((item) => {
+                        item
+                            .setTitle('Download files (current note)')
+                            .setIcon('download')
+                            .onClick(() => this.handleDownloadWithOptions('currentFile'));
+                    });
+                }
             })
         );
 
