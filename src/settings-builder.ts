@@ -16,18 +16,18 @@ export class SettingsBuilder {
 
 		containerEl.createEl('h2', {text: 'Local attachments settings'});
 
-		// Processing options
-		containerEl.createEl('h3', {text: 'Processing options', cls: 'setting-category'});
+		// Processing
+		containerEl.createEl('h3', {text: 'Processing', cls: 'setting-category'});
 		this.addScopeDropdown();
 		this.addTasksDropdown();
 
-		// File extension options
+		// File extensions
 		containerEl.createEl('h3', {text: 'File extensions', cls: 'setting-category'});
 		this.addPresetExtensions();
 		this.addCustomExtensions();
 
-		// Storage options
-		containerEl.createEl('h3', {text: 'Storage options', cls: 'setting-category'});
+		// Storage
+		containerEl.createEl('h3', {text: 'Storage', cls: 'setting-category'});
 		this.addStorePath();
 
 		// Add category styling

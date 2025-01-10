@@ -28,7 +28,7 @@ export class SingleItemModal extends Modal {
         UIHelper.addCategoryStyles();
 
         // Processing Options
-        UIHelper.createCategoryHeader(contentEl, 'Processing Options');
+        UIHelper.createCategoryHeader(contentEl, 'Processing');
         this.settingsBuilder.addScopeDropdown();
         this.settingsBuilder.addTasksDropdown();
 
@@ -58,7 +58,7 @@ export class SingleItemModal extends Modal {
         document.head.appendChild(style);
 
         // Storage Options
-        UIHelper.createCategoryHeader(contentEl, 'Storage Options');
+        UIHelper.createCategoryHeader(contentEl, 'Storage');
         this.settingsBuilder.addStorePath();
 
         // Add submit button

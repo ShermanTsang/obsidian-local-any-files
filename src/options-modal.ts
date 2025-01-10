@@ -1,8 +1,8 @@
-import {App, Modal, Notice} from 'obsidian';
+import { App, Modal, Notice } from 'obsidian';
 import LocalAttachmentsPlugin from "./main";
-import {SettingsBuilder} from "./settings-builder";
-import {SettingsValidator} from "./utils/settings-validator";
-import {UIHelper} from "./utils/ui-helper";
+import { SettingsBuilder } from "./settings-builder";
+import { SettingsValidator } from "./utils/settings-validator";
+import { UIHelper } from "./utils/ui-helper";
 
 export class OptionsModal extends Modal {
     private settingsBuilder: SettingsBuilder;
@@ -29,7 +29,7 @@ export class OptionsModal extends Modal {
         UIHelper.addCategoryStyles();
 
         // Processing Options
-        UIHelper.createCategoryHeader(contentEl, 'Processing Options');
+        UIHelper.createCategoryHeader(contentEl, 'Processing');
         this.settingsBuilder.addScopeDropdown();
         this.settingsBuilder.addTasksDropdown();
 
@@ -40,7 +40,7 @@ export class OptionsModal extends Modal {
         this.settingsBuilder.addFinalExtensionsDisplay();
 
         // Storage Options
-        UIHelper.createCategoryHeader(contentEl, 'Storage Options');
+        UIHelper.createCategoryHeader(contentEl, 'Storage');
         this.settingsBuilder.addStorePath();
 
         // Add submit button

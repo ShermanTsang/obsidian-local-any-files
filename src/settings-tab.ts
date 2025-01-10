@@ -23,19 +23,19 @@ export class LocalAttachmentsSettingTab extends PluginSettingTab {
         // Add shared styles
         UIHelper.addCategoryStyles();
 
-        // Processing Options
-        UIHelper.createCategoryHeader(containerEl, 'Processing Options');
+        // Processing
+        UIHelper.createCategoryHeader(containerEl, 'Processing');
         builder.addScopeDropdown();
         builder.addTasksDropdown();
 
-        // File Extension Options
+        // File Extensions
         UIHelper.createCategoryHeader(containerEl, 'File Extensions');
         builder.addPresetExtensions();
         builder.addCustomExtensions();
         builder.addFinalExtensionsDisplay();
 
-        // Storage Options
-        UIHelper.createCategoryHeader(containerEl, 'Storage Options');
+        // Storage
+        UIHelper.createCategoryHeader(containerEl, 'Storage');
         builder.addStorePath();
     }
 }
