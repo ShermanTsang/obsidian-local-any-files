@@ -1,4 +1,3 @@
-import * as crypto from 'crypto';
 import { MarkdownView, Notice, Plugin, TFile } from 'obsidian';
 import { DEFAULT_SETTINGS, EXTENSION_PRESETS } from "./config";
 import { OptionsModal } from './options-modal';
@@ -6,7 +5,7 @@ import { ProcessModal } from "./process-modal";
 import { SettingsBuilder } from './settings-builder';
 import { LocalAttachmentsSettingTab } from "./settings-tab";
 import { SingleItemModal } from './single-item-modal';
-import { FileDownloader, LinkExtractor, LinkReplacer } from "./utils/link-extractor";
+import { FileDownloader, LinkExtractor, LinkReplacer, simpleHash } from "./utils/link-extractor";
 
 export default class LocalAttachmentsPlugin extends Plugin {
     settings: LocalAttachmentsSettings;
@@ -210,7 +209,7 @@ export default class LocalAttachmentsPlugin extends Plugin {
                                     date: new Date().toISOString().split('T')[0],
                                     time: new Date().toISOString().split('T')[1].split('.')[0].replace(/:/g, '-'),
                                     originalName: link.fileName,
-                                    md5: crypto.createHash('md5').update(link.fileName).digest('hex')
+                                    md5: simpleHash(link.fileName)
                                 },
                                 this.settings.storeFileName
                             );
@@ -292,7 +291,7 @@ export default class LocalAttachmentsPlugin extends Plugin {
                     date: new Date().toISOString().split('T')[0],
                     time: new Date().toISOString().split('T')[1].split('.')[0].replace(/:/g, '-'),
                     originalName: documentPath.split('/').pop() || 'untitled',
-                    md5: crypto.createHash('md5').update(documentPath.split('/').pop() || 'untitled').digest('hex')
+                    md5: simpleHash(documentPath.split('/').pop() || 'untitled')
                 },
                 this.settings.storeFileName
             );

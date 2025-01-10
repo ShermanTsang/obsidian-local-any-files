@@ -1,7 +1,18 @@
 // utils/link-extractor.ts
 // utils/file-downloader.ts
-import { createHash } from 'crypto';
 import { requestUrl, RequestUrlResponse } from 'obsidian';
+
+// Simple hash function that works in any JavaScript environment
+export function simpleHash(str: string): string {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+        const char = str.charCodeAt(i);
+        hash = ((hash << 5) - hash) + char;
+        hash = hash & hash; // Convert to 32-bit integer
+    }
+    // Convert to positive hex string and take first 8 characters
+    return Math.abs(hash).toString(16).substring(0, 8);
+}
 
 export interface ExtractedLink {
 	originalLink: string;
@@ -204,13 +215,13 @@ export class FileDownloader {
 			
 			// If no filename found, use a hash of the full URL
 			if (!filename) {
-				filename = createHash('md5').update(url).digest('hex').substring(0, 8);
+				filename = simpleHash(url);
 			}
 			
 			return filename;
 		} catch (error) {
 			// If URL parsing fails, use a hash of the URL
-			return createHash('md5').update(url).digest('hex').substring(0, 8);
+			return simpleHash(url);
 		}
 	}
 
@@ -257,7 +268,7 @@ export class FileDownloader {
 		const fileVariables = {
 			...this.variables,
 			originalName: cleanFileName,
-			md5: createHash('md5').update(originalUrl).digest('hex')
+			md5: simpleHash(originalUrl)
 		};
 
 		Object.entries(fileVariables).forEach(([key, value]) => {
