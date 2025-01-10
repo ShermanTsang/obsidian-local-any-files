@@ -38,9 +38,6 @@ export class ProcessModal extends Modal {
 
         const {contentEl} = this;
         contentEl.empty();
-        
-        // Override default modal styles
-        UIHelper.overrideDefaultModalStyles();
 
         // Stats section
         this.statsContainer = contentEl.createDiv({cls: 'stats-container'});

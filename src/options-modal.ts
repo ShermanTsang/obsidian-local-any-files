@@ -22,19 +22,13 @@ export class OptionsModal extends Modal {
         const {contentEl} = this;
         contentEl.empty();
 
-        // Override default modal styles
-        UIHelper.overrideDefaultModalStyles();
-
-        // Add shared styles
-        UIHelper.addCategoryStyles();
-
         // Processing Options
         UIHelper.createCategoryHeader(contentEl, 'Processing');
         this.settingsBuilder.addScopeDropdown();
         this.settingsBuilder.addTasksDropdown();
 
         // File Extension Options
-        UIHelper.createCategoryHeader(contentEl, 'File Extensions');
+        UIHelper.createCategoryHeader(contentEl, 'File extensions');
         this.settingsBuilder.addPresetExtensions();
         this.settingsBuilder.addCustomExtensions();
         this.settingsBuilder.addFinalExtensionsDisplay();
@@ -45,7 +39,7 @@ export class OptionsModal extends Modal {
 
         // Add submit button
         const submitButton = contentEl.createEl('button', {
-            text: 'Start Processing',
+            text: 'Start processing',
             cls: 'mod-cta'
         });
         submitButton.addEventListener('click', () => {

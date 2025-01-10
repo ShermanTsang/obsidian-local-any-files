@@ -21,12 +21,6 @@ export class SingleItemModal extends Modal {
         const {contentEl} = this;
         contentEl.empty();
 
-        // Override default modal styles
-        UIHelper.overrideDefaultModalStyles();
-
-        // Add shared styles
-        UIHelper.addCategoryStyles();
-
         // Processing Options
         UIHelper.createCategoryHeader(contentEl, 'Processing');
         this.settingsBuilder.addScopeDropdown();
@@ -43,27 +37,13 @@ export class SingleItemModal extends Modal {
             text: this.documentPath
         });
 
-        // Add truncation styles
-        const style = document.createElement('style');
-        style.textContent = `
-            .target-link-text {
-                white-space: wrap;
-                word-break: break-all;
-                padding: 0 12px;
-                font-size: .9rem;
-                background-color: var(--background-modifier-form-field);
-                border-radius: 4px;
-            }
-        `;
-        document.head.appendChild(style);
-
         // Storage Options
         UIHelper.createCategoryHeader(contentEl, 'Storage');
         this.settingsBuilder.addStorePath();
 
         // Add submit button
         const submitButton = contentEl.createEl('button', {
-            text: 'Start Download',
+            text: 'Start download',
             cls: 'mod-cta'
         });
         submitButton.addEventListener('click', () => {

@@ -6,3 +6,84 @@ available in the app when your plugin is enabled.
 If your plugin does not need CSS, delete this file.
 
 */
+
+.progress-bar {
+	width: 100%;
+	height: 20px;
+	background-color: var(--background-modifier-border);
+	border-radius: 10px;
+	overflow: hidden;
+	margin: 20px 0;
+}
+
+.progress-fill {
+	height: 100%;
+	background-color: var(--interactive-accent);
+	transition: width 0.3s ease;
+	width: 0;
+}
+
+.logs-container {
+	max-height: 200px;
+	overflow-y: auto;
+	border: 1px solid var(--background-modifier-border);
+	padding: 10px;
+	margin-top: 20px;
+	font-family: monospace;
+}
+
+.logs-container div {
+	margin: 5px 0;
+}
+
+/* Modal Styles */
+.modal-header {
+    padding: 16px 20px;
+    border-bottom: 1px solid var(--background-modifier-border);
+}
+
+.modal-content {
+    padding: 10px;
+    overflow-y: auto;
+    max-height: 1000px;
+}
+
+/* Category Styles */
+.setting-category {
+    color: var(--text-normal);
+    font-size: 1.2em;
+    font-weight: 600;
+}
+
+/* Button Styles */
+button.mod-cta {
+    width: 100%;
+    padding: 10px;
+}
+
+/* Setting Item Styles */
+
+.setting-item .setting-item-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 4px;
+}
+
+.setting-item .setting-item-name {
+    margin-bottom: 0;
+}
+
+.setting-item .setting-item-description {
+    margin-top: 0;
+    color: var(--text-muted);
+}
+
+/* Target Link Styles */
+.target-link-text {
+    white-space: wrap;
+    word-break: break-all;
+    padding: 0 12px;
+    font-size: .9rem;
+    background-color: var(--background-modifier-form-field);
+    border-radius: 4px;
+}

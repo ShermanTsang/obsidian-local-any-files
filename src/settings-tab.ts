@@ -18,16 +18,13 @@ export class LocalAttachmentsSettingTab extends PluginSettingTab {
         // Create settings builder
         const builder = new SettingsBuilder(containerEl, this.plugin);
 
-        // Add shared styles
-        UIHelper.addCategoryStyles();
-
         // Processing
         UIHelper.createCategoryHeader(containerEl, 'Processing');
         builder.addScopeDropdown();
         builder.addTasksDropdown();
 
         // File Extensions
-        UIHelper.createCategoryHeader(containerEl, 'File Extensions');
+        UIHelper.createCategoryHeader(containerEl, 'File extensions');
         builder.addPresetExtensions();
         builder.addCustomExtensions();
         builder.addFinalExtensionsDisplay();

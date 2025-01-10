@@ -25,7 +25,7 @@ export class SettingsBuilder {
 		this.addCustomExtensions();
 
 		// Storage
-		containerEl.createEl('h3', {text: 'Storage', cls: 'setting-category'});
+		containerEl.createEl('h3', {text: 'Storage', cls: 'setting-category storage-category'});
 		this.addStorePath();
 
 		// Add category styling
